@@ -80,8 +80,8 @@ func (u *URLStore) GetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusTemporaryRedirect)
 	w.Header().Set("Location", originalURL)
+	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
 func (u *URLStore) generateID() string {
