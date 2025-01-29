@@ -32,7 +32,7 @@ func (u *URLStore) RootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *URLStore) PostHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("Content-Type") != "text/plain" {
+	if !strings.HasPrefix(r.Header.Get("Content-Type"), "text/plain") {
 		http.Error(w, "Content-Type must be text/plain", http.StatusBadRequest)
 		return
 	}
