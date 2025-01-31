@@ -21,17 +21,9 @@ func NewURLStore() *URLStore {
 	}
 }
 
-func (u *URLStore) RootHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		u.PostHandler(w, r)
-	} else if r.Method == http.MethodGet {
-		u.GetHandler(w, r)
-	} else {
-		http.Error(w, "Invalid method", http.StatusBadRequest)
-	}
-}
-
 func (u *URLStore) PostHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
 	if !strings.HasPrefix(r.Header.Get("Content-Type"), "text/plain") {
 		http.Error(w, "Content-Type must be text/plain", http.StatusBadRequest)
 		return
