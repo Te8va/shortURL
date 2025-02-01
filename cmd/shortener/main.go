@@ -4,12 +4,15 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Te8va/shortURL/internal/app/config"
 	"github.com/Te8va/shortURL/internal/app/router"
 )
 
 func main() {
-	log.Println("Starting server on :8080")
-	if err := http.ListenAndServe(":8080", router.NewRouter()); err != nil {
-		log.Fatalf("Server failed: %v", err)
+	cfg := config.InitConfig()
+
+	log.Println("Starting server on ", cfg.ServerAddress)
+	if err := http.ListenAndServe(cfg.ServerAddress, router.NewRouter(cfg)); err != nil {
+		log.Fatalf("Server failed:", err)
 	}
 }

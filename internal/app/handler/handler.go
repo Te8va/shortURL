@@ -7,17 +7,21 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/Te8va/shortURL/internal/app/config"
 )
 
 const length = 8
 
 type URLStore struct {
 	store map[string]string
+	cfg   *config.Config
 }
 
-func NewURLStore() *URLStore {
+func NewURLStore(cfg *config.Config) *URLStore {
 	return &URLStore{
 		store: make(map[string]string),
+		cfg:   cfg,
 	}
 }
 
@@ -50,7 +54,7 @@ func (u *URLStore) PostHandler(w http.ResponseWriter, r *http.Request) {
 	id := u.generateID()
 	u.store[id] = originalURL
 
-	shortenedURL := fmt.Sprintf("http://localhost:8080/%s", id)
+	shortenedURL := fmt.Sprintf("%s%s",u.cfg.BaseURL, id)
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	if _, err := w.Write([]byte(shortenedURL)); err != nil {

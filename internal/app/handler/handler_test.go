@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Te8va/shortURL/internal/app/config"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 )
@@ -14,7 +16,12 @@ func TestPostHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	testStore := NewURLStore()
+	testCfg := &config.Config{
+		BaseURL:       "http://localhost:8080",
+		ServerAddress: "localhost:8080",
+	}
+
+	testStore := NewURLStore(testCfg)
 
 	testCases := []struct {
 		name        string
@@ -73,7 +80,12 @@ func TestGetHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	testStore := NewURLStore()
+	testCfg := &config.Config{
+		BaseURL:       "http://localhost:8080",
+		ServerAddress: "localhost:8080",
+	}
+
+	testStore := NewURLStore(testCfg)
 
 	testID := "testID"
 	testURL := "http://example.com"
