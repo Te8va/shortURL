@@ -1,10 +1,11 @@
 package router
 
 import (
+	"github.com/go-chi/chi/v5"
+
+	"github.com/Te8va/shortURL/internal/app/config"
 	"github.com/Te8va/shortURL/internal/app/handler"
 	"github.com/Te8va/shortURL/internal/app/middleware"
-	"github.com/Te8va/shortURL/internal/app/config"
-	"github.com/go-chi/chi/v5"
 )
 
 func NewRouter(cfg *config.Config) chi.Router {

@@ -1,6 +1,11 @@
 package config
 
-import "flag"
+import (
+	"flag"
+	"os"
+
+	"github.com/joho/godotenv"
+)
 
 type Config struct {
 	ServerAddress string
@@ -8,11 +13,30 @@ type Config struct {
 }
 
 func InitConfig() *Config {
-	cfg := &Config{}
+	defaultServerAddress := "localhost:8080"
+	defaultBaseURL := "http://localhost:8080"
 
-	flag.StringVar(&cfg.ServerAddress, "a", "localhost:8080", "Address to run HTTP server")
-	flag.StringVar(&cfg.BaseURL, "b", "http://localhost:8080", "Base URL for short links")
+	_ = godotenv.Load()
+
+	serverAddrFlag := flag.String("a", "", "Address to run HTTP server")
+	baseURLFlag := flag.String("b", "", "Base URL for short links")
 
 	flag.Parse()
-	return cfg
+
+	serverAddr := getFirstNonEmpty(os.Getenv("SERVER_ADDRESS"), *serverAddrFlag, defaultServerAddress)
+	baseURL := getFirstNonEmpty(os.Getenv("BASE_URL"), *baseURLFlag, defaultBaseURL)
+
+	return &Config{
+		ServerAddress: serverAddr,
+		BaseURL:       baseURL,
+	}
+}
+
+func getFirstNonEmpty(values ...string) string {
+	for _, v := range values {
+		if v != "" {
+			return v
+		}
+	}
+	return ""
 }

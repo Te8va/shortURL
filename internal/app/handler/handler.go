@@ -54,7 +54,7 @@ func (u *URLStore) PostHandler(w http.ResponseWriter, r *http.Request) {
 	id := u.generateID()
 	u.store[id] = originalURL
 
-	shortenedURL := fmt.Sprintf("%s%s",u.cfg.BaseURL, id)
+	shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	if _, err := w.Write([]byte(shortenedURL)); err != nil {

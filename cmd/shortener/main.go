@@ -13,6 +13,6 @@ func main() {
 
 	log.Println("Starting server on ", cfg.ServerAddress)
 	if err := http.ListenAndServe(cfg.ServerAddress, router.NewRouter(cfg)); err != nil {
-		log.Fatalf("Server failed:", err)
+		log.Fatalf("Server failed: %v", err)
 	}
 }
