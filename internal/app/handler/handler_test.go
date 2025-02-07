@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Te8va/shortURL/internal/app/config"
+	"github.com/Te8va/shortURL/internal/app/repository"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -21,7 +22,8 @@ func TestPostHandler(t *testing.T) {
 		ServerAddress: "localhost:8080",
 	}
 
-	testStore := NewURLStore(testCfg)
+	testRepo := repository.NewMapStore()
+	testStore := NewURLStore(testCfg, testRepo)
 
 	testCases := []struct {
 		name        string
@@ -85,12 +87,13 @@ func TestGetHandler(t *testing.T) {
 		ServerAddress: "localhost:8080",
 	}
 
-	testStore := NewURLStore(testCfg)
+	testRepo := repository.NewMapStore()
+	testStore := NewURLStore(testCfg, testRepo)
 
 	testID := "testID"
 	testURL := "http://example.com"
-
-	testStore.store[testID] = testURL
+	err := testRepo.Save(testID, testURL)
+	require.NoError(t, err, "failed to save test data")
 
 	testCases := []struct {
 		name      string

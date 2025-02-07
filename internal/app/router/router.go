@@ -6,10 +6,13 @@ import (
 	"github.com/Te8va/shortURL/internal/app/config"
 	"github.com/Te8va/shortURL/internal/app/handler"
 	"github.com/Te8va/shortURL/internal/app/middleware"
+	"github.com/Te8va/shortURL/internal/app/repository"
 )
 
 func NewRouter(cfg *config.Config) chi.Router {
-	store := handler.NewURLStore(cfg)
+	repo := repository.NewMapStore()
+
+	store := handler.NewURLStore(cfg, repo)
 	r := chi.NewRouter()
 
 	r.Use(middleware.Middleware)

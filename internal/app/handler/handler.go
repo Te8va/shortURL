@@ -1,61 +1,69 @@
 package handler
 
 import (
-	"bufio"
 	"fmt"
+	"io"
 	"math/rand"
 	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/Te8va/shortURL/internal/app/config"
+	"github.com/Te8va/shortURL/internal/app/domain"
 )
 
-const length = 8
+const (
+	length          = 8
+	ContentType     = "Content-Type"
+	ContentTypeText = "text/plain"
+)
 
 type URLStore struct {
-	store map[string]string
-	cfg   *config.Config
+	repo domain.RepositoryStore
+	cfg  *config.Config
 }
 
-func NewURLStore(cfg *config.Config) *URLStore {
+func NewURLStore(cfg *config.Config, repo domain.RepositoryStore) *URLStore {
 	return &URLStore{
-		store: make(map[string]string),
-		cfg:   cfg,
+		repo: repo,
+		cfg:  cfg,
 	}
 }
 
 func (u *URLStore) PostHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	if !strings.HasPrefix(r.Header.Get("Content-Type"), "text/plain") {
+	if !strings.HasPrefix(r.Header.Get(ContentType), ContentTypeText) {
 		http.Error(w, "Content-Type must be text/plain", http.StatusBadRequest)
 		return
 	}
 
-	scanner := bufio.NewScanner(r.Body)
-	if !scanner.Scan() {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+	originalURLBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Failed to read request body", http.StatusBadRequest)
 		return
 	}
 
-	originalURL := scanner.Text()
+	originalURL := string(originalURLBytes)
 	if originalURL == "" {
 		http.Error(w, "Empty URL", http.StatusBadRequest)
 		return
 	}
 
-	_, err := url.ParseRequestURI(originalURL)
+	_, err = url.ParseRequestURI(originalURL)
 	if err != nil {
 		http.Error(w, "Invalid URL format", http.StatusBadRequest)
 		return
 	}
 
 	id := u.generateID()
-	u.store[id] = originalURL
+	if err := u.repo.Save(id, originalURL); err != nil {
+		http.Error(w, "Failed to save URL", http.StatusBadRequest)
+		return
+	}
 
 	shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
-	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set(ContentType, ContentTypeText)
 	w.WriteHeader(http.StatusCreated)
 	if _, err := w.Write([]byte(shortenedURL)); err != nil {
 		http.Error(w, "Failed to write response", http.StatusBadRequest)
@@ -70,7 +78,7 @@ func (u *URLStore) GetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	originalURL, exists := u.store[id]
+	originalURL, exists := u.repo.Get(id)
 	if !exists {
 		http.Error(w, "URL not found", http.StatusBadRequest)
 		return
@@ -90,7 +98,7 @@ func (u *URLStore) generateID() string {
 		}
 		id := string(randStrBytes)
 
-		if _, exists := u.store[id]; !exists {
+		if _, exists := u.repo.Get(id); !exists {
 			return id
 		}
 	}

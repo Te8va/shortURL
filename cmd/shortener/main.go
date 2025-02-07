@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	cfg := config.InitConfig()
+	cfg := config.NewConfig()
 
 	log.Println("Starting server on ", cfg.ServerAddress)
 	if err := http.ListenAndServe(cfg.ServerAddress, router.NewRouter(cfg)); err != nil {
