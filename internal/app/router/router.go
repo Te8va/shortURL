@@ -15,7 +15,11 @@ func NewRouter(cfg *config.Config) chi.Router {
 	store := handler.NewURLStore(cfg, repo)
 	r := chi.NewRouter()
 
-	r.Use(middleware.Middleware)
+	if err := middleware.Initialize("info"); err != nil {
+		panic(err)
+    }
+
+	r.Use(middleware.WithLogging)
 	r.Post("/", store.PostHandler)
 	r.Get("/{id}", store.GetHandler)
 
