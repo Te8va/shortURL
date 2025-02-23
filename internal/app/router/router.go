@@ -22,6 +22,7 @@ func NewRouter(cfg *config.Config) chi.Router {
 	r.Use(middleware.WithLogging)
 	r.Post("/", store.PostHandler)
 	r.Get("/{id}", store.GetHandler)
+	r.Post("/api/shorten", store.PostHandlerJSON)
 
 	return r
 }
