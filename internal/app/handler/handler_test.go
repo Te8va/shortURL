@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/Te8va/shortURL/internal/app/config"
@@ -13,16 +14,42 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func createTestStorageFile() (string, error) {
+	fileName := "test_storage.json"
+	file, err := os.Create(fileName)
+	if err != nil {
+		return "", err
+	}
+
+	_, err = file.WriteString("{}")
+	if err != nil {
+		return "", err
+	}
+
+	err = file.Close()
+	if err != nil {
+		return "", err
+	}
+
+	return fileName, nil
+}
+
 func TestPostHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
+	testFile, err := createTestStorageFile()
+	require.NoError(t, err, "failed to create test storage file")
+	defer os.Remove(testFile)
 
 	testCfg := &config.Config{
 		BaseURL:       "http://localhost:8080",
 		ServerAddress: "localhost:8080",
 	}
 
-	testRepo := repository.NewMapStore()
+	testRepo, err := repository.NewMapStore("test_storage.json")
+	require.NoError(t, err, "failed to initialize test repository")
+
 	testStore := NewURLStore(testCfg, testRepo)
 
 	testCases := []struct {
@@ -82,17 +109,23 @@ func TestGetHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	testFile, err := createTestStorageFile()
+	require.NoError(t, err, "failed to create test storage file")
+	defer os.Remove(testFile)
+
 	testCfg := &config.Config{
 		BaseURL:       "http://localhost:8080",
 		ServerAddress: "localhost:8080",
 	}
 
-	testRepo := repository.NewMapStore()
+	testRepo, err := repository.NewMapStore("test_storage.json")
+	require.NoError(t, err, "failed to initialize test repository")
+
 	testStore := NewURLStore(testCfg, testRepo)
 
 	testID := "testID"
 	testURL := "http://example.com"
-	err := testRepo.Save(testID, testURL)
+	err = testRepo.Save(testID, testURL)
 	require.NoError(t, err, "failed to save test data")
 
 	testCases := []struct {
@@ -142,12 +175,18 @@ func TestPostHandlerJSON(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	testFile, err := createTestStorageFile()
+	require.NoError(t, err, "failed to create test storage file")
+	defer os.Remove(testFile)
+
 	testCfg := &config.Config{
 		BaseURL:       "http://localhost:8080",
 		ServerAddress: "localhost:8080",
 	}
 
-	testRepo := repository.NewMapStore()
+	testRepo, err := repository.NewMapStore("test_storage.json")
+	require.NoError(t, err, "failed to initialize test repository")
+
 	testStore := NewURLStore(testCfg, testRepo)
 
 	testCases := []struct {
