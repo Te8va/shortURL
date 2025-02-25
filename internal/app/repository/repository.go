@@ -2,6 +2,7 @@ package repository
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
@@ -17,20 +18,14 @@ func NewMapStore(filePath string) (*MapStore, error) {
 	}
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-        file, err := os.Create(filePath)
-        if err != nil {
-            return nil, err
-        }
-        defer file.Close()
-        data := "{}"
-        _, err = file.WriteString(data)
-        if err != nil {
-            return nil, err
-        }
-    }
+		err := os.WriteFile(filePath, []byte("{}"), 0666)
+		if err != nil {
+			return nil, fmt.Errorf("ошибка создания файла %s: %w", filePath, err)
+		}
+	}
 
 	if err := store.loadFromFile(); err != nil {
-		return nil,err
+		return nil, fmt.Errorf("ошибка загрузки данных из файла %s: %w", filePath, err)
 	}
 
 	return store, nil
@@ -48,7 +43,7 @@ func (s *MapStore) Get(id string) (string, bool) {
 }
 
 func (s *MapStore) saveToFile() error {
-	file, err := os.OpenFile(s.file, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	file, err := os.OpenFile(s.file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		return err
 	}
