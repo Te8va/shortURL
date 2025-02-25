@@ -26,8 +26,8 @@ func gzipHandle(h http.Handler) http.Handler {
 			}
 			defer gz.Close()
 
-			r.Header.Del("Content-Encoding")
 			r.Body = io.NopCloser(gz)
+			r.Header.Del("Content-Encoding")
 		}
 
 		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
