@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand"
@@ -16,6 +17,7 @@ const (
 	length          = 8
 	ContentType     = "Content-Type"
 	ContentTypeText = "text/plain"
+	ContentTypeApp  = "application/json"
 )
 
 type URLStore struct {
@@ -101,5 +103,46 @@ func (u *URLStore) generateID() string {
 		if _, exists := u.repo.Get(id); !exists {
 			return id
 		}
+	}
+}
+
+func (u *URLStore) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	if !strings.HasPrefix(r.Header.Get(ContentType), ContentTypeApp) {
+		http.Error(w, "Content-Type must be application/json", http.StatusBadRequest)
+		return
+	}
+
+	var req domain.ShortenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	if req.URL == "" {
+		http.Error(w, "Empty URL", http.StatusBadRequest)
+		return
+	}
+
+	if _, err := url.ParseRequestURI(req.URL); err != nil {
+		http.Error(w, "Invalid URL format", http.StatusBadRequest)
+		return
+	}
+
+	id := u.generateID()
+	if err := u.repo.Save(id, req.URL); err != nil {
+		http.Error(w, "Failed to save URL", http.StatusBadRequest)
+		return
+	}
+
+	shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
+	resp := domain.ShortenResponse{Result: shortenedURL}
+
+	w.Header().Set(ContentType, ContentTypeApp)
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
 	}
 }
