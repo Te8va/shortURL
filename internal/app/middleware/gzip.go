@@ -25,7 +25,7 @@ func gzipHandle(h http.Handler) http.Handler {
 				return
 			}
 			defer gz.Close()
-			r.Body = gz
+			r.Body = io.NopCloser(gz)
 		}
 
 		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
@@ -33,13 +33,13 @@ func gzipHandle(h http.Handler) http.Handler {
 			return
 		}
 
-		w.Header().Set("Content-Type", "gzip")
 		contentType := w.Header().Get("Content-Type")
 		if contentType != "application/json" && contentType != "text/html" {
 			h.ServeHTTP(w, r)
 			return
 		}
 
+		w.Header().Set("Content-Encoding", "gzip")
 		gz, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
 		if err != nil {
 			io.WriteString(w, err.Error())
@@ -48,7 +48,6 @@ func gzipHandle(h http.Handler) http.Handler {
 
 		defer gz.Close()
 
-		w.Header().Set("Content-Encoding", "gzip")
 		h.ServeHTTP(gzipWriter{ResponseWriter: w, Writer: gz}, r)
 	})
 }
