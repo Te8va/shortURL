@@ -36,7 +36,7 @@ func gzipHandle(h http.Handler) http.Handler {
 		}
 
 		contentType := w.Header().Get("Content-Type")
-		if contentType != "application/json" && contentType != "text/html" {
+		if contentType != "application/json" && contentType != "text/html" && r.Header.Get("Content-Type") != "application/x-gzip" {
 			h.ServeHTTP(w, r)
 			return
 		}
