@@ -49,8 +49,8 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.responseData.status = statusCode
 }
 
-func WithLogging(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func WithLogging(h http.Handler) http.Handler {
+	return gzipHandle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
 		duration := time.Since(start)
@@ -69,11 +69,11 @@ func WithLogging(next http.Handler) http.Handler {
 			ResponseWriter: w,
 			responseData:   responseData,
 		}
-		next.ServeHTTP(&lw, r)
+		h.ServeHTTP(&lw, r)
 
 		Log.Info("HTTP request",
 			zap.Int("status", responseData.status),
 			zap.Int("size", responseData.size),
 		)
-	})
+	}))
 }
