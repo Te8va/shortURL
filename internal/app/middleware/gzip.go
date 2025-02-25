@@ -25,6 +25,8 @@ func gzipHandle(h http.Handler) http.Handler {
 				return
 			}
 			defer gz.Close()
+
+			r.Header.Del("Content-Encoding")
 			r.Body = io.NopCloser(gz)
 		}
 
