@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/Te8va/shortURL/internal/app/config"
 	"github.com/Te8va/shortURL/internal/app/router"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
 
@@ -24,11 +26,18 @@ func main() {
 		}
 	}()
 
+	ctx := context.Background()
+	db, err := pgxpool.New(ctx, cfg.PostgresConn)
+	if err != nil {
+		sugar.Errorw("Failed to connect to database: %v", "error", err)
+	}
+	defer db.Close()
+
 	sugar.Infow(
 		"Starting server",
 		"addr", cfg.ServerAddress,
 	)
-	if err := http.ListenAndServe(cfg.ServerAddress, router.NewRouter(cfg)); err != nil {
+	if err := http.ListenAndServe(cfg.ServerAddress, router.NewRouter(cfg, db)); err != nil {
 		sugar.Fatalw(err.Error(), "event", "start server")
 	}
 }

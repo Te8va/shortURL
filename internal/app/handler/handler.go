@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"strings"
@@ -21,15 +20,24 @@ const (
 )
 
 type URLStore struct {
-	repo domain.RepositoryStore
-	cfg  *config.Config
+	srv domain.ServiceStore
+	cfg *config.Config
 }
 
-func NewURLStore(cfg *config.Config, repo domain.RepositoryStore) *URLStore {
+func NewURLStore(cfg *config.Config, srv domain.ServiceStore) *URLStore {
 	return &URLStore{
-		repo: repo,
-		cfg:  cfg,
+		srv: srv,
+		cfg: cfg,
 	}
+}
+
+func (u *URLStore) PingHandler(w http.ResponseWriter, r *http.Request) {
+	err := u.srv.PingPg(r.Context())
+	if err != nil {
+		http.Error(w, "Database connection failed", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (u *URLStore) PostHandler(w http.ResponseWriter, r *http.Request) {
@@ -58,8 +66,8 @@ func (u *URLStore) PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := u.generateID()
-	if err := u.repo.Save(id, originalURL); err != nil {
+	id, err := u.srv.Save(r.Context(), originalURL)
+	if err != nil {
 		http.Error(w, "Failed to save URL", http.StatusBadRequest)
 		return
 	}
@@ -80,7 +88,7 @@ func (u *URLStore) GetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	originalURL, exists := u.repo.Get(id)
+	originalURL, exists := u.srv.Get(r.Context(), id)
 	if !exists {
 		http.Error(w, "URL not found", http.StatusBadRequest)
 		return
@@ -88,22 +96,6 @@ func (u *URLStore) GetHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Location", originalURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
-}
-
-func (u *URLStore) generateID() string {
-	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-
-	for {
-		randStrBytes := make([]byte, length)
-		for i := 0; i < length; i++ {
-			randStrBytes[i] = charset[rand.Intn(len(charset))]
-		}
-		id := string(randStrBytes)
-
-		if _, exists := u.repo.Get(id); !exists {
-			return id
-		}
-	}
 }
 
 func (u *URLStore) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
@@ -120,18 +112,13 @@ func (u *URLStore) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.URL == "" {
-		http.Error(w, "Empty URL", http.StatusBadRequest)
-		return
-	}
-
 	if _, err := url.ParseRequestURI(req.URL); err != nil {
 		http.Error(w, "Invalid URL format", http.StatusBadRequest)
 		return
 	}
 
-	id := u.generateID()
-	if err := u.repo.Save(id, req.URL); err != nil {
+	id, err := u.srv.Save(r.Context(), req.URL)
+	if err != nil {
 		http.Error(w, "Failed to save URL", http.StatusBadRequest)
 		return
 	}

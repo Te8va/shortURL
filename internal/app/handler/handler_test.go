@@ -4,53 +4,27 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/Te8va/shortURL/internal/app/config"
-	"github.com/Te8va/shortURL/internal/app/repository"
+	"github.com/Te8va/shortURL/internal/app/domain/mocks"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 )
 
-func createTestStorageFile() (string, error) {
-	fileName := "test_storage.json"
-	file, err := os.Create(fileName)
-	if err != nil {
-		return "", err
-	}
-
-	_, err = file.WriteString("{}")
-	if err != nil {
-		return "", err
-	}
-
-	err = file.Close()
-	if err != nil {
-		return "", err
-	}
-
-	return fileName, nil
-}
-
 func TestPostHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	testFile, err := createTestStorageFile()
-	require.NoError(t, err, "failed to create test storage file")
-	defer os.Remove(testFile)
+	mockRepo := mocks.NewMockRepositoryStore(ctrl)
 
 	testCfg := &config.Config{
 		BaseURL:       "http://localhost:8080",
 		ServerAddress: "localhost:8080",
 	}
 
-	testRepo, err := repository.NewMapStore("test_storage.json")
-	require.NoError(t, err, "failed to initialize test repository")
-
-	testStore := NewURLStore(testCfg, testRepo)
+	testStore := NewURLStore(testCfg, mockRepo)
 
 	testCases := []struct {
 		name        string
@@ -109,24 +83,19 @@ func TestGetHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	testFile, err := createTestStorageFile()
-	require.NoError(t, err, "failed to create test storage file")
-	defer os.Remove(testFile)
+	mockRepo := mocks.NewMockRepositoryStore(ctrl)
 
 	testCfg := &config.Config{
 		BaseURL:       "http://localhost:8080",
 		ServerAddress: "localhost:8080",
 	}
 
-	testRepo, err := repository.NewMapStore("test_storage.json")
-	require.NoError(t, err, "failed to initialize test repository")
-
-	testStore := NewURLStore(testCfg, testRepo)
+	testStore := NewURLStore(testCfg, mockRepo)
 
 	testID := "testID"
 	testURL := "http://example.com"
-	err = testRepo.Save(testID, testURL)
-	require.NoError(t, err, "failed to save test data")
+	mockRepo.EXPECT().Get(gomock.Any(), testID).Return(testURL, true).AnyTimes()
+	mockRepo.EXPECT().Get(gomock.Any(), "invalidID").Return("", false).AnyTimes()
 
 	testCases := []struct {
 		name      string
@@ -175,19 +144,14 @@ func TestPostHandlerJSON(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	testFile, err := createTestStorageFile()
-	require.NoError(t, err, "failed to create test storage file")
-	defer os.Remove(testFile)
+	mockRepo := mocks.NewMockRepositoryStore(ctrl)
 
 	testCfg := &config.Config{
 		BaseURL:       "http://localhost:8080",
 		ServerAddress: "localhost:8080",
 	}
 
-	testRepo, err := repository.NewMapStore("test_storage.json")
-	require.NoError(t, err, "failed to initialize test repository")
-
-	testStore := NewURLStore(testCfg, testRepo)
+	testStore := NewURLStore(testCfg, mockRepo)
 
 	testCases := []struct {
 		name        string
@@ -240,4 +204,26 @@ func TestPostHandlerJSON(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPingHandler(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mocks.NewMockRepositoryStore(ctrl)
+
+	testCfg := &config.Config{
+		BaseURL:       "http://localhost:8080",
+		ServerAddress: "localhost:8080",
+	}
+
+	testStore := NewURLStore(testCfg, mockRepo)
+
+	req, err := http.NewRequest(http.MethodGet, "/ping", nil)
+	require.NoError(t, err)
+
+	w := httptest.NewRecorder()
+	testStore.PingHandler(w, req)
+
+	require.Equal(t, http.StatusOK, w.Code)
 }

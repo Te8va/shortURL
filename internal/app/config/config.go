@@ -9,9 +9,14 @@ import (
 )
 
 type Config struct {
-	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
-	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"`
-	FileStoragePath string `env:"FILE_STORAGE_PATH" envDefault:"storage.json"`
+	ServerAddress    string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
+	BaseURL          string `env:"BASE_URL" envDefault:"http://localhost:8080"`
+	FileStoragePath  string `env:"FILE_STORAGE_PATH" envDefault:"storage.json"`
+	PostgresUser     string `env:"POSTGRES_USER"         envDefault:"merch"`
+	PostgresPassword string `env:"POSTGRES_PASSWORD"     envDefault:"merch"`
+	PostgresDB       string `env:"POSTGRES_DB"     envDefault:"merch"`
+	PostgresPort     int    `env:"POSTGRES_PORT"         envDefault:"5432"`
+	PostgresConn     string `env:"POSTGRES_CONN"  envDefault:"postgres://shortURL:shortURL@shortURL-db:5432/shortURL?sslmode=disable"`
 }
 
 func NewConfig() *Config {
@@ -27,6 +32,7 @@ func NewConfig() *Config {
 	serverAddrFlag := flag.String("a", "", "Address to run HTTP server")
 	baseURLFlag := flag.String("b", "", "Base URL for short links")
 	fileStorageFlag := flag.String("f", "", "Path to storage file")
+	databaseDSNFlag := flag.String("d", "", "PostgreSQL connection string")
 
 	flag.Parse()
 
@@ -38,6 +44,9 @@ func NewConfig() *Config {
 	}
 	if *fileStorageFlag != "" {
 		cfg.FileStoragePath = *fileStorageFlag
+	}
+	if *databaseDSNFlag != "" {
+		cfg.PostgresConn = *databaseDSNFlag
 	}
 
 	return &cfg
