@@ -60,6 +60,8 @@ func TestPostHandler(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			mockRepo.EXPECT().Save(gomock.Any(), gomock.Any()).Return("shortURL", nil).AnyTimes()
+
 			req, err := http.NewRequest(http.MethodPost, "/", bytes.NewBufferString(testCase.body))
 			require.NoError(t, err)
 
@@ -187,6 +189,8 @@ func TestPostHandlerJSON(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			mockRepo.EXPECT().Save(gomock.Any(), gomock.Any()).Return("shortURL", nil).AnyTimes()
+
 			req, err := http.NewRequest(http.MethodPost, "/", bytes.NewBufferString(testCase.body))
 			require.NoError(t, err)
 
@@ -211,6 +215,9 @@ func TestPingHandler(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockRepositoryStore(ctrl)
+
+	mockRepo.EXPECT().Save(gomock.Any(), gomock.Any()).Return("shortURL", nil).AnyTimes()
+	mockRepo.EXPECT().PingPg(gomock.Any()).Return(nil).AnyTimes()
 
 	testCfg := &config.Config{
 		BaseURL:       "http://localhost:8080",
