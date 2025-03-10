@@ -11,6 +11,7 @@ import (
 )
 
 func main() {
+
 	cfg := config.NewConfig()
 
 	logger, err := zap.NewDevelopment()

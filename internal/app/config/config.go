@@ -5,24 +5,23 @@ import (
 	"log"
 
 	"github.com/caarlos0/env/v10"
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
 	ServerAddress    string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
 	BaseURL          string `env:"BASE_URL" envDefault:"http://localhost:8080"`
 	FileStoragePath  string `env:"FILE_STORAGE_PATH" envDefault:"storage.json"`
-	PostgresUser     string `env:"POSTGRES_USER"         envDefault:"merch"`
-	PostgresPassword string `env:"POSTGRES_PASSWORD"     envDefault:"merch"`
-	PostgresDB       string `env:"POSTGRES_DB"     envDefault:"merch"`
+	PostgresUser     string `env:"POSTGRES_USER"         envDefault:"shortURL"`
+	PostgresPassword string `env:"POSTGRES_PASSWORD"     envDefault:"shortURL"`
+	PostgresDB       string `env:"POSTGRES_DB"     envDefault:"shortURL"`
 	PostgresPort     int    `env:"POSTGRES_PORT"         envDefault:"5432"`
 	PostgresConn     string `env:"POSTGRES_CONN"  envDefault:"postgres://shortURL:shortURL@shortURL-db:5432/shortURL?sslmode=disable"`
 }
 
 func NewConfig() *Config {
-	if err := godotenv.Load(); err != nil {
-		log.Printf("Error to load .env file or not found:%v", err)
-	}
+	// if err := godotenv.Load(); err != nil {
+	// 	log.Printf("Error to load .env file or not found:%v", err)
+	// }
 
 	cfg := Config{}
 	if err := env.Parse(&cfg); err != nil {
