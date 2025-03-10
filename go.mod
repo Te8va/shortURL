@@ -1,8 +1,6 @@
 module github.com/Te8va/shortURL
 
-go 1.23
-
-toolchain go1.23.7
+go 1.22.1
 
 require (
 	github.com/caarlos0/env/v10 v10.0.0
