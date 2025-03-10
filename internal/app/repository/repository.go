@@ -25,6 +25,10 @@ func NewURLRepository(db *pgxpool.Pool, filePath string) (*URLRepository, error)
 		file: filePath,
 	}
 
+	if err := store.createDB(context.Background()); err != nil {
+		return nil, fmt.Errorf("ошибка инициализации базы данных: %w", err)
+	}
+
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		err := os.WriteFile(filePath, []byte("{}"), 0666)
 		if err != nil {
@@ -39,6 +43,15 @@ func NewURLRepository(db *pgxpool.Pool, filePath string) (*URLRepository, error)
 	return store, nil
 }
 
+func (r *URLRepository) createDB(ctx context.Context) error {
+	_, err := r.db.Exec(ctx, `CREATE TABLE IF NOT EXISTS urlshrt (
+		uuid SERIAL PRIMARY KEY,
+		short TEXT UNIQUE NOT NULL,
+		original TEXT NOT NULL
+	)`)
+	return err
+}
+
 func (r *URLRepository) PingPg(ctx context.Context) error {
 	err := r.db.Ping(ctx)
 	if err != nil {
@@ -50,13 +63,32 @@ func (r *URLRepository) PingPg(ctx context.Context) error {
 
 func (r *URLRepository) Save(ctx context.Context, url string) (string, error) {
 	id := r.generateID()
+	query := `INSERT INTO urlshrt (short, original) VALUES ($1, $2);`
+
+	_, err := r.db.Exec(ctx, query, id, url)
+	if err != nil {
+		return "", fmt.Errorf("ошибка сохранения в БД: %w", err)
+	}
+
 	r.data[id] = url
 
-	err := r.saveToFile()
+	err = r.saveToFile()
+	if err != nil {
+		return "", fmt.Errorf("ошибка сохранения в файл: %w", err)
+	}
+
 	return id, err
 }
 
 func (r *URLRepository) Get(ctx context.Context, id string) (string, bool) {
+	query := `SELECT original FROM urlshrt WHERE short = $1;`
+
+	var url string
+	err := r.db.QueryRow(ctx, query, id).Scan(&url)
+	if err == nil {
+		return url, true
+	}
+
 	url, exists := r.data[id]
 	return url, exists
 }
