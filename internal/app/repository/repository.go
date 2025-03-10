@@ -14,14 +14,12 @@ const length = 8
 
 type URLRepository struct {
 	db   *pgxpool.Pool
-	data map[string]string
 	file string
 }
 
 func NewURLRepository(db *pgxpool.Pool, filePath string) (*URLRepository, error) {
 	store := &URLRepository{
 		db:   db,
-		data: make(map[string]string),
 		file: filePath,
 	}
 
@@ -34,10 +32,6 @@ func NewURLRepository(db *pgxpool.Pool, filePath string) (*URLRepository, error)
 		if err != nil {
 			return nil, fmt.Errorf("ошибка создания файла %s: %w", filePath, err)
 		}
-	}
-
-	if err := store.loadFromFile(); err != nil {
-		return nil, fmt.Errorf("ошибка загрузки данных из файла %s: %w", filePath, err)
 	}
 
 	return store, nil
@@ -70,10 +64,7 @@ func (r *URLRepository) Save(ctx context.Context, url string) (string, error) {
 		return "", fmt.Errorf("ошибка сохранения в БД: %w", err)
 	}
 
-	r.data[id] = url
-
-	err = r.saveToFile()
-	if err != nil {
+	if err := r.saveToFile(id, url); err != nil {
 		return "", fmt.Errorf("ошибка сохранения в файл: %w", err)
 	}
 
@@ -89,35 +80,37 @@ func (r *URLRepository) Get(ctx context.Context, id string) (string, bool) {
 		return url, true
 	}
 
-	url, exists := r.data[id]
-	return url, exists
+	return url, false
 }
 
-func (r *URLRepository) saveToFile() error {
+func (r *URLRepository) saveToFile(id, url string) error {
 	file, err := os.OpenFile(r.file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
-		return err
+		return fmt.Errorf("ошибка открытия файла %s: %w", r.file, err)
 	}
 	defer file.Close()
 
-	data, err := json.MarshalIndent(r.data, "", "  ")
-	if err != nil {
-		return err
+	data := make(map[string]string)
+	fileData, err := os.ReadFile(r.file)
+	if err == nil && len(fileData) > 0 {
+		if err := json.Unmarshal(fileData, &data); err != nil {
+			return fmt.Errorf("ошибка десериализации данных из файла: %w", err)
+		}
 	}
 
-	_, err = file.Write(data)
+	data[id] = url
+
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return fmt.Errorf("ошибка сериализации данных: %w", err)
+	}
+
+	_, err = file.WriteAt(jsonData, 0)
+	if err != nil {
+		return fmt.Errorf("ошибка записи в файл %s: %w", r.file, err)
+	}
+
 	return err
-}
-
-func (r *URLRepository) loadFromFile() error {
-	file, err := os.ReadFile(r.file)
-	if err != nil {
-		return err
-	}
-	if err := json.Unmarshal(file, &r.data); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (r *URLRepository) generateID() string {
@@ -130,7 +123,13 @@ func (r *URLRepository) generateID() string {
 		}
 		id := string(randStrBytes)
 
-		if _, exists := r.data[id]; !exists {
+		var exists bool
+		err := r.db.QueryRow(context.Background(), "SELECT EXISTS(SELECT 1 FROM urlshrt WHERE short = $1)", id).Scan(&exists)
+		if err != nil {
+			continue
+		}
+
+		if !exists {
 			return id
 		}
 	}

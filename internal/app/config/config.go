@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/caarlos0/env/v10"
+	"github.com/caarlos0/env/v6"
 )
 
 type Config struct {
@@ -19,9 +19,6 @@ type Config struct {
 }
 
 func NewConfig() *Config {
-	// if err := godotenv.Load(); err != nil {
-	// 	log.Printf("Error to load .env file or not found:%v", err)
-	// }
 
 	cfg := Config{}
 	if err := env.Parse(&cfg); err != nil {
