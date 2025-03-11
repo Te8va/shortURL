@@ -1,18 +1,21 @@
 package main
 
 import (
-	"context"
+	"log"
 	"net/http"
 
 	"github.com/Te8va/shortURL/internal/app/config"
-	"github.com/Te8va/shortURL/internal/app/router"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/Te8va/shortURL/internal/app/handler"
+	"github.com/Te8va/shortURL/internal/app/middleware"
+	"github.com/Te8va/shortURL/internal/app/repository"
+	"github.com/Te8va/shortURL/internal/app/service"
+	"github.com/caarlos0/env/v6"
+	"github.com/go-chi/chi"
+	"github.com/golang-migrate/migrate/v4"
 	"go.uber.org/zap"
 )
 
 func main() {
-	cfg := config.NewConfig()
-
 	logger, err := zap.NewDevelopment()
 	if err != nil {
 		panic(err)
@@ -26,18 +29,46 @@ func main() {
 		}
 	}()
 
-	ctx := context.Background()
-	db, err := pgxpool.New(ctx, cfg.PostgresConn)
-	if err != nil {
-		sugar.Errorw("Failed to connect to database: %v", "error", err)
-	}
-	defer db.Close()
+	cfg := config.NewConfig()
 
-	sugar.Infow(
-		"Starting server",
-		"addr", cfg.ServerAddress,
-	)
-	if err := http.ListenAndServe(cfg.ServerAddress, router.NewRouter(cfg, db)); err != nil {
+	if err := env.Parse(cfg); err != nil {
+		sugar.Fatalw("Failed to parse env", "error", err)
+	}
+
+	m, err := migrate.New("file://migrations", cfg.PostgresConn)
+	if err != nil {
+		sugar.Fatalw("Failed to apply migrations", "error", err)
+	}
+
+	err = repository.ApplyMigrations(m)
+	if err != nil {
+		sugar.Fatalw("Failed to apply migrations", "error", err)
+	}
+
+	sugar.Infoln("Migrations applied successfully")
+
+	pool, err := repository.GetPgxPool(cfg.PostgresConn)
+	if err != nil {
+		sugar.Fatalln("Failed to connect to database", "error", err)
+	}
+
+	repo := repository.NewURLService(pool)
+	srv := service.NewURL(repo)
+	store := handler.NewURLStore(cfg, srv)
+	r := chi.NewRouter()
+
+	if err := middleware.Initialize("info"); err != nil {
+		log.Println("Failed to initialize middleware:", err)
+	}
+
+	r.Use(middleware.WithLogging)
+	r.Post("/", store.PostHandler)
+	r.Get("/{id}", store.GetHandler)
+	r.Post("/api/shorten", store.PostHandlerJSON)
+	r.Get("/ping", store.PingHandler)
+
+	sugar.Infow("Starting server", "addr", cfg.ServerAddress)
+	if err := http.ListenAndServe(cfg.ServerAddress, r); err != nil {
 		sugar.Fatalw(err.Error(), "event", "start server")
 	}
 }

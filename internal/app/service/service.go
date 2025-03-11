@@ -8,22 +8,22 @@ import (
 
 const length = 8
 
-type URLService struct {
+type URL struct {
 	repo domain.RepositoryStore
 }
 
-func NewURLService(repo domain.RepositoryStore) *URLService {
-	return &URLService{repo: repo}
+func NewURL(repo domain.RepositoryStore) *URL {
+	return &URL{repo: repo}
 }
 
-func (s *URLService) PingPg(ctx context.Context) error {
+func (s *URL) PingPg(ctx context.Context) error {
 	return s.repo.PingPg(ctx)
 }
 
-func (s *URLService) Save(ctx context.Context, url string) (string, error) {
+func (s *URL) Save(ctx context.Context, url string) (string, error) {
 	return s.repo.Save(ctx, url)
 }
 
-func (s *URLService) Get(ctx context.Context, id string) (string, bool) {
+func (s *URL) Get(ctx context.Context, id string) (string, bool) {
 	return s.repo.Get(ctx, id)
 }

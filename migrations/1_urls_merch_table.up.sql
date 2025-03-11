@@ -1,0 +1,8 @@
+BEGIN;
+
+CREATE TABLE urls (
+    id VARCHAR(8) PRIMARY KEY,
+    url TEXT NOT NULL
+);
+
+COMMIT;

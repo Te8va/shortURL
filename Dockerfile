@@ -9,4 +9,5 @@ FROM alpine:latest
 WORKDIR /shortURL
 RUN mkdir /shortURL/logs
 COPY --from=build /build/cmd/shortURL/bin/main .
+COPY --from=build /build/migrations /shortURL/migrations
 CMD ["/shortURL/main"]

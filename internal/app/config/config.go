@@ -2,10 +2,6 @@ package config
 
 import (
 	"flag"
-	"log"
-
-	"github.com/caarlos0/env/v10"
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -20,14 +16,7 @@ type Config struct {
 }
 
 func NewConfig() *Config {
-	if err := godotenv.Load(); err != nil {
-		log.Printf("Error to load .env file or not found:%v", err)
-	}
-
-	cfg := Config{}
-	if err := env.Parse(&cfg); err != nil {
-		log.Fatalf("Error parsing environment variables:%v", err)
-	}
+	cfg := &Config{}
 
 	serverAddrFlag := flag.String("a", "", "Address to run HTTP server")
 	baseURLFlag := flag.String("b", "", "Base URL for short links")
@@ -49,5 +38,5 @@ func NewConfig() *Config {
 		cfg.PostgresConn = *databaseDSNFlag
 	}
 
-	return &cfg
+	return cfg
 }

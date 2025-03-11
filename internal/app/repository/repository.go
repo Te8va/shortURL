@@ -2,93 +2,56 @@ package repository
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"math/rand"
-	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 const length = 8
 
-type URLRepository struct {
-	db   *pgxpool.Pool
-	data map[string]string
-	file string
+type URLService struct {
+	pool *pgxpool.Pool
 }
 
-func NewURLRepository(db *pgxpool.Pool, filePath string) (*URLRepository, error) {
-	store := &URLRepository{
-		db:   db,
-		data: make(map[string]string),
-		file: filePath,
-	}
-
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		err := os.WriteFile(filePath, []byte("{}"), 0666)
-		if err != nil {
-			return nil, fmt.Errorf("ошибка создания файла %s: %w", filePath, err)
-		}
-	}
-
-	if err := store.loadFromFile(); err != nil {
-		return nil, fmt.Errorf("ошибка загрузки данных из файла %s: %w", filePath, err)
-	}
-
-	return store, nil
+func NewURLService(pool *pgxpool.Pool) *URLService {
+	return &URLService{pool: pool}
 }
 
-func (r *URLRepository) PingPg(ctx context.Context) error {
-	err := r.db.Ping(ctx)
+func (r *URLService) PingPg(ctx context.Context) error {
+	err := r.pool.Ping(ctx)
 	if err != nil {
 		return fmt.Errorf("repository.Ping: %w", err)
 	}
-
 	return nil
 }
 
-func (r *URLRepository) Save(ctx context.Context, url string) (string, error) {
+func (r *URLService) Save(ctx context.Context, url string) (string, error) {
 	id := r.generateID()
-	r.data[id] = url
 
-	err := r.saveToFile()
-	return id, err
-}
-
-func (r *URLRepository) Get(ctx context.Context, id string) (string, bool) {
-	url, exists := r.data[id]
-	return url, exists
-}
-
-func (r *URLRepository) saveToFile() error {
-	file, err := os.OpenFile(r.file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+	_, err := r.pool.Exec(ctx, "INSERT INTO urls (id, url) VALUES ($1, $2)", id, url)
 	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	data, err := json.MarshalIndent(r.data, "", "  ")
-	if err != nil {
-		return err
+		return "", fmt.Errorf("ошибка при сохранении URL: %w", err)
 	}
 
-	_, err = file.Write(data)
-	return err
+	return id, nil
 }
 
-func (r *URLRepository) loadFromFile() error {
-	file, err := os.ReadFile(r.file)
+func (r *URLService) Get(ctx context.Context, id string) (string, bool) {
+	var url string
+	err := r.pool.QueryRow(ctx, "SELECT url FROM urls WHERE id = $1", id).Scan(&url)
+
 	if err != nil {
-		return err
+		if err.Error() == "no rows in result set" {
+			return "", false
+		}
+		return "", false
 	}
-	if err := json.Unmarshal(file, &r.data); err != nil {
-		return err
-	}
-	return nil
+
+	return url, true
 }
 
-func (r *URLRepository) generateID() string {
+func (r *URLService) generateID() string {
 	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
 	for {
@@ -98,7 +61,13 @@ func (r *URLRepository) generateID() string {
 		}
 		id := string(randStrBytes)
 
-		if _, exists := r.data[id]; !exists {
+		var exists bool
+		err := r.pool.QueryRow(context.Background(), "SELECT EXISTS(SELECT 1 FROM urls WHERE id = $1)", id).Scan(&exists)
+		if err != nil {
+			continue
+		}
+
+		if !exists {
 			return id
 		}
 	}
