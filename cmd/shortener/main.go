@@ -1,12 +1,12 @@
 package main
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/Te8va/shortURL/internal/app/config"
+	"github.com/Te8va/shortURL/internal/app/repository"
 	"github.com/Te8va/shortURL/internal/app/router"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/golang-migrate/migrate/v4"
 	"go.uber.org/zap"
 )
 
@@ -27,18 +27,30 @@ func main() {
 		}
 	}()
 
-	ctx := context.Background()
-	db, err := pgxpool.New(ctx, cfg.PostgresConn)
+	m, err := migrate.New("file://migrations", cfg.PostgresConn)
 	if err != nil {
-		sugar.Errorw("Failed to connect to database: %v", "error", err)
+		sugar.Fatalw("Failed to initialize migrations", "error", err)
 	}
-	defer db.Close()
+
+	err = repository.ApplyMigrations(m)
+	if err != nil {
+		sugar.Fatalw("Failed to apply migrations", "error", err)
+	}
+
+	pool, err := repository.GetPgxPool(cfg.PostgresConn)
+	if err != nil {
+		sugar.Fatalw("Failed to create Postgres connection pool", "error", err)
+	}
+
+	defer pool.Close()
+
+	sugar.Infow("Migrations applied successfully")
 
 	sugar.Infow(
 		"Starting server",
 		"addr", cfg.ServerAddress,
 	)
-	if err := http.ListenAndServe(cfg.ServerAddress, router.NewRouter(cfg, db)); err != nil {
+	if err := http.ListenAndServe(cfg.ServerAddress, router.NewRouter(cfg, pool)); err != nil {
 		sugar.Fatalw(err.Error(), "event", "start server")
 	}
 }

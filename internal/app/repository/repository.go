@@ -18,13 +18,13 @@ type URLRepository struct {
 }
 
 func NewURLRepository(db *pgxpool.Pool, filePath string) (*URLRepository, error) {
+	if db == nil {
+		return nil, fmt.Errorf("пул подключений к базе данных равен nil")
+	}
+
 	store := &URLRepository{
 		db:   db,
 		file: filePath,
-	}
-
-	if err := store.createDB(context.Background()); err != nil {
-		return nil, fmt.Errorf("ошибка инициализации базы данных: %w", err)
 	}
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -37,15 +37,6 @@ func NewURLRepository(db *pgxpool.Pool, filePath string) (*URLRepository, error)
 	return store, nil
 }
 
-func (r *URLRepository) createDB(ctx context.Context) error {
-	_, err := r.db.Exec(ctx, `CREATE TABLE IF NOT EXISTS urlshrt (
-		uuid SERIAL PRIMARY KEY,
-		short TEXT UNIQUE NOT NULL,
-		original TEXT NOT NULL
-	)`)
-	return err
-}
-
 func (r *URLRepository) PingPg(ctx context.Context) error {
 	err := r.db.Ping(ctx)
 	if err != nil {
@@ -56,6 +47,10 @@ func (r *URLRepository) PingPg(ctx context.Context) error {
 }
 
 func (r *URLRepository) Save(ctx context.Context, url string) (string, error) {
+	if r == nil {
+		return "", fmt.Errorf("URLRepository не инициализирован")
+	}
+
 	id := r.generateID()
 	query := `INSERT INTO urlshrt (short, original) VALUES ($1, $2);`
 
@@ -80,7 +75,7 @@ func (r *URLRepository) Get(ctx context.Context, id string) (string, bool) {
 		return url, true
 	}
 
-	return url, false
+	return "", false
 }
 
 func (r *URLRepository) saveToFile(id, url string) error {
