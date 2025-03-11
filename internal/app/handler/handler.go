@@ -142,7 +142,7 @@ type BatchRequest struct {
 
 type BatchResponse struct {
 	CorrelationID string `json:"correlation_id"`
-	ShortURL      string `json:"short_url"`
+	ShortURL       string `json:"short_url"`
 }
 
 func (u *URLStore) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
