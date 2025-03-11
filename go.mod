@@ -1,8 +1,6 @@
 module github.com/Te8va/shortURL
 
-go 1.23
-
-toolchain go1.23.7
+go 1.22.1
 
 require (
 	github.com/Te8va/Tender v0.0.0-20240916165646-d60875ffcebc
