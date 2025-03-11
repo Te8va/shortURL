@@ -108,6 +108,37 @@ func (r *URLRepository) saveToFile(id, url string) error {
 	return err
 }
 
+func (r *URLRepository) SaveBatch(ctx context.Context, urls map[string]string) (map[string]string, error) {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка начала транзакции: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	result := make(map[string]string)
+	for correlationID, originalURL := range urls {
+		id := r.generateID()
+		query := `INSERT INTO urlshrt (short, original) VALUES ($1, $2);`
+
+		_, err := tx.Exec(ctx, query, id, originalURL)
+		if err != nil {
+			return nil, fmt.Errorf("ошибка сохранения URL в БД: %w", err)
+		}
+
+		if err := r.saveToFile(id, originalURL); err != nil {
+			return nil, fmt.Errorf("ошибка сохранения в файл: %w", err)
+		}
+
+		result[correlationID] = id
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("ошибка при завершении транзакции: %w", err)
+	}
+
+	return result, nil
+}
+
 func (r *URLRepository) generateID() string {
 	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 

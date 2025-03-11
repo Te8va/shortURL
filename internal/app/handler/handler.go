@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -131,5 +132,68 @@ func (u *URLStore) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		http.Error(w, "Failed to write response", http.StatusInternalServerError)
 		return
+	}
+}
+
+type BatchRequest struct {
+	CorrelationID string `json:"correlation_id"`
+	OriginalURL   string `json:"original_url"`
+}
+
+type BatchResponse struct {
+	CorrelationID string `json:"correlation_id"`
+	ShortURL      string `json:"short_url"`
+}
+
+func (u *URLStore) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	var batchReq []BatchRequest
+	var batchResp []BatchResponse
+
+	if r.Header.Get("Content-Encoding") == "gzip" {
+		gz, err := gzip.NewReader(r.Body)
+		if err != nil {
+			http.Error(w, "Ошибка при распаковке данных", http.StatusBadRequest)
+			return
+		}
+		defer gz.Close()
+		if err := json.NewDecoder(gz).Decode(&batchReq); err != nil {
+			http.Error(w, "Некорректный JSON", http.StatusBadRequest)
+			return
+		}
+	} else {
+		if err := json.NewDecoder(r.Body).Decode(&batchReq); err != nil {
+			http.Error(w, "Некорректный JSON", http.StatusBadRequest)
+			return
+		}
+	}
+
+	if len(batchReq) == 0 {
+		http.Error(w, "Пустой список URL", http.StatusBadRequest)
+		return
+	}
+
+	urlMap := make(map[string]string)
+	for _, req := range batchReq {
+		id, err := u.srv.Save(r.Context(), req.OriginalURL)
+		if err != nil {
+			http.Error(w, "Ошибка сохранения URL", http.StatusInternalServerError)
+			return
+		}
+		urlMap[req.CorrelationID] = fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
+	}
+
+	for _, req := range batchReq {
+		batchResp = append(batchResp, BatchResponse{
+			CorrelationID: req.CorrelationID,
+			ShortURL:      urlMap[req.CorrelationID],
+		})
+	}
+
+	w.Header().Set(ContentType, ContentTypeApp)
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(batchResp); err != nil {
+		http.Error(w, "Ошибка записи ответа", http.StatusInternalServerError)
 	}
 }

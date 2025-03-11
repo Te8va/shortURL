@@ -27,3 +27,7 @@ func (s *URLService) Save(ctx context.Context, url string) (string, error) {
 func (s *URLService) Get(ctx context.Context, id string) (string, bool) {
 	return s.repo.Get(ctx, id)
 }
+
+func (s *URLService) SaveBatch(ctx context.Context, urls map[string]string) (map[string]string, error) {
+	return s.repo.SaveBatch(ctx, urls)
+}
