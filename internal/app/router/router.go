@@ -31,6 +31,7 @@ func NewRouter(cfg *config.Config, db *pgxpool.Pool) chi.Router {
 	r.Post("/", store.PostHandler)
 	r.Get("/{id}", store.GetHandler)
 	r.Post("/api/shorten", store.PostHandlerJSON)
+	r.Post("/api/shorten/batch", store.PostHandlerBatch)
 	r.Get("/ping", store.PingHandler)
 
 	return r
