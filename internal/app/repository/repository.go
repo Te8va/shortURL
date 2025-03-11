@@ -3,10 +3,14 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/rand"
 	"os"
 
+	appErrors "github.com/Te8va/shortURL/internal/app/errors"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -52,11 +56,34 @@ func (r *URLRepository) Save(ctx context.Context, url string) (string, error) {
 	}
 
 	id := r.generateID()
-	query := `INSERT INTO urlshrt (short, original) VALUES ($1, $2);`
+	query := `INSERT INTO urlshrt (short, original) 
+        VALUES ($1, $2) 
+        ON CONFLICT (original) 
+        DO UPDATE SET short = EXCLUDED.short 
+        RETURNING short;`
 
-	_, err := r.db.Exec(ctx, query, id, url)
+	var short string
+	err := r.db.QueryRow(ctx, query, id, url).Scan(&short)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
+			uErr := appErrors.ErrURLExists
+
+			row := r.db.QueryRow(ctx, "SELECT short FROM urlshrt WHERE original = $1", url)
+			var existingShort string
+			errScan := row.Scan(&existingShort)
+			if errScan != nil {
+				return "", errScan
+			}
+
+			return existingShort, uErr
+		}
+
 		return "", fmt.Errorf("ошибка сохранения в БД: %w", err)
+	}
+
+	if short != id {
+		return short, appErrors.ErrURLExists
 	}
 
 	if err := r.saveToFile(id, url); err != nil {

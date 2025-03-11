@@ -6,8 +6,6 @@ import (
 	"github.com/Te8va/shortURL/internal/app/domain"
 )
 
-const length = 8
-
 type URLService struct {
 	repo domain.RepositoryStore
 }

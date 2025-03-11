@@ -3,6 +3,7 @@ package handler
 import (
 	"compress/gzip"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/Te8va/shortURL/internal/app/config"
 	"github.com/Te8va/shortURL/internal/app/domain"
+	appErrors "github.com/Te8va/shortURL/internal/app/errors"
 )
 
 const (
@@ -69,9 +71,17 @@ func (u *URLStore) PostHandler(w http.ResponseWriter, r *http.Request) {
 
 	id, err := u.srv.Save(r.Context(), originalURL)
 	if err != nil {
-		http.Error(w, "Failed to save URL", http.StatusBadRequest)
-		return
-	}
+        if errors.Is(err, appErrors.ErrURLExists) {
+            shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
+            w.Header().Set(ContentType, ContentTypeText)
+            w.WriteHeader(http.StatusConflict)
+            w.Write([]byte(shortenedURL))
+            return
+        } else {
+            http.Error(w, "Failed to save URL", http.StatusBadRequest)
+            return
+        }
+    }
 
 	shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
 	w.Header().Set(ContentType, ContentTypeText)
@@ -119,12 +129,22 @@ func (u *URLStore) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, err := u.srv.Save(r.Context(), req.URL)
-	if err != nil {
-		http.Error(w, "Failed to save URL", http.StatusBadRequest)
+	shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
+
+	if errors.Is(err, appErrors.ErrURLExists) {
+		resp := domain.ShortenResponse{Result: shortenedURL}
+		w.Header().Set(ContentType, ContentTypeApp)
+		w.WriteHeader(http.StatusConflict)
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			http.Error(w, "Failed to write response", http.StatusInternalServerError)
+			return
+		}
+		return
+	} else if err != nil {
+		http.Error(w, "Failed to save URL", http.StatusInternalServerError)
 		return
 	}
 
-	shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
 	resp := domain.ShortenResponse{Result: shortenedURL}
 
 	w.Header().Set(ContentType, ContentTypeApp)
@@ -142,7 +162,7 @@ type BatchRequest struct {
 
 type BatchResponse struct {
 	CorrelationID string `json:"correlation_id"`
-	ShortURL       string `json:"short_url"`
+	ShortURL      string `json:"short_url"`
 }
 
 func (u *URLStore) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
