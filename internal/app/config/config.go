@@ -12,9 +12,9 @@ type Config struct {
 	ServerAddress    string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
 	BaseURL          string `env:"BASE_URL" envDefault:"http://localhost:8080"`
 	FileStoragePath  string `env:"FILE_STORAGE_PATH" envDefault:"storage.json"`
-	PostgresUser     string `env:"POSTGRES_USER"         envDefault:"merch"`
-	PostgresPassword string `env:"POSTGRES_PASSWORD"     envDefault:"merch"`
-	PostgresDB       string `env:"POSTGRES_DB"     envDefault:"merch"`
+	PostgresUser     string `env:"POSTGRES_USER"         envDefault:"shortURL"`
+	PostgresPassword string `env:"POSTGRES_PASSWORD"     envDefault:"shortURL"`
+	PostgresDB       string `env:"POSTGRES_DB"     envDefault:"shortURL"`
 	PostgresPort     int    `env:"POSTGRES_PORT"         envDefault:"5432"`
 	PostgresConn     string `env:"POSTGRES_CONN"  envDefault:"postgres://shortURL:shortURL@shortURL-db:5432/shortURL?sslmode=disable"`
 }
