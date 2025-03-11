@@ -20,21 +20,6 @@ services:
 
     networks:
       - app-network
- 
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: shortURL
-    depends_on:
-      db:
-        condition: service_healthy
-    ports:
-      - "8080:8080"
-    environment:
-    - POSTGRES_CONN=postgres://shortURL:shortURL@shortURL-db:5432/shortURL?sslmode=disable
-    networks:
-      - app-network
 
 volumes:
   db_data:

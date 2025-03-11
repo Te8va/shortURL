@@ -12,7 +12,7 @@ type Config struct {
 	PostgresPassword string `env:"POSTGRES_PASSWORD"     envDefault:"shortURL"`
 	PostgresDB       string `env:"POSTGRES_DB"     envDefault:"shortURL"`
 	PostgresPort     int    `env:"POSTGRES_PORT"         envDefault:"5432"`
-	PostgresConn     string `env:"POSTGRES_CONN"  envDefault:"postgres://shortURL:shortURL@shortURL-db:5432/shortURL?sslmode=disable"`
+	PostgresConn     string `env:"POSTGRES_CONN"  envDefault:"postgres://shortURL:shortURL@localhost:5432/shortURL?sslmode=disable"`
 }
 
 func NewConfig() *Config {
