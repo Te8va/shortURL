@@ -27,7 +27,7 @@ func main() {
 		}
 	}()
 
-	m, err := migrate.New("file://migrations", cfg.PostgresConn)
+	m, err := migrate.New("file://migrations", cfg.DatabaseDSN)
 	if err != nil {
 		sugar.Fatalw("Failed to initialize migrations", "error", err)
 	}
@@ -37,7 +37,7 @@ func main() {
 		sugar.Fatalw("Failed to apply migrations", "error", err)
 	}
 
-	pool, err := repository.GetPgxPool(cfg.PostgresConn)
+	pool, err := repository.GetPgxPool(cfg.DatabaseDSN)
 	if err != nil {
 		sugar.Fatalw("Failed to create Postgres connection pool", "error", err)
 	}
