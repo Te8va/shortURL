@@ -17,18 +17,18 @@ func NewPostgres(pool *pgxpool.Pool) *postgres {
 	return &postgres{pool}
 }
 
-func GetPgxPool(dsn string) (*pgxpool.Pool, error) {
+func GetPgxPool(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
 		return nil, fmt.Errorf("repository.GetPgxPool: %w", err)
 	}
 
-	pool, err := pgxpool.NewWithConfig(context.Background(), config)
+	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		return nil, fmt.Errorf("repository.GetPgxPool: %w", err)
 	}
 
-	err = pool.Ping(context.Background())
+	err = pool.Ping(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("repository.GetPgxPool: %w", err)
 	}
