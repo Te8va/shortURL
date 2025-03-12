@@ -3,6 +3,7 @@ package config
 import (
 	"flag"
 	"log"
+	"os"
 
 	"github.com/caarlos0/env/v6"
 )
@@ -15,7 +16,7 @@ type Config struct {
 	PostgresPassword string `env:"POSTGRES_PASSWORD"     envDefault:"shortURL"`
 	PostgresDB       string `env:"POSTGRES_DB"     envDefault:"shortURL"`
 	PostgresPort     int    `env:"POSTGRES_PORT"         envDefault:"5432"`
-	DatabaseDSN     string `env:"DATABASE_DSN"  envDefault:"postgres://shortURL:shortURL@localhost:5432/shortURL?sslmode=disable"`
+	DatabaseDSN      string `env:"DATABASE_DSN"  envDefault:"postgres://shortURL:shortURL@localhost:5432/shortURL?sslmode=disable"`
 }
 
 func NewConfig() *Config {
@@ -41,7 +42,10 @@ func NewConfig() *Config {
 	if *fileStorageFlag != "" {
 		cfg.FileStoragePath = *fileStorageFlag
 	}
-	if *databaseDSNFlag != "" {
+
+	if dsnEnv, exists := os.LookupEnv("DATABASE_DSN"); exists {
+		cfg.DatabaseDSN = dsnEnv
+	} else if *databaseDSNFlag != "" {
 		cfg.DatabaseDSN = *databaseDSNFlag
 	}
 
