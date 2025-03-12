@@ -29,7 +29,7 @@ func main() {
 
 	sugar.Infoln(*cfg)
 
-	m, err := migrate.New("file://migrations", cfg.DatabaseDSN)
+	m, err := migrate.New("file:///migrations", cfg.DatabaseDSN)
 	if err != nil {
 		sugar.Fatalw("Failed to initialize migrations", "error", err)
 	}
