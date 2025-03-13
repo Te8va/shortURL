@@ -70,7 +70,11 @@ func (r *URLRepository) SaveBatch(ctx context.Context, urls map[string]string) (
 	if err != nil {
 		return nil, fmt.Errorf("ошибка начала транзакции: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		if rollbackErr := tx.Rollback(ctx); rollbackErr != nil && err == nil {
+			err = fmt.Errorf("ошибка при откате транзакции: %w", rollbackErr)
+		}
+	}()
 
 	result := make(map[string]string)
 	for correlationID, originalURL := range urls {

@@ -3,12 +3,10 @@ package repository
 import (
 	"context"
 	"math/rand"
-	"sync"
 )
 
 type MemoryRepository struct {
 	store map[string]string
-	mu    sync.RWMutex
 }
 
 func NewMemoryRepository() *MemoryRepository {

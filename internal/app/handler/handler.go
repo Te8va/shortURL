@@ -74,7 +74,10 @@ func (u *URLStore) PostHandler(w http.ResponseWriter, r *http.Request) {
 			shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
 			w.Header().Set(ContentType, ContentTypeText)
 			w.WriteHeader(http.StatusConflict)
-			w.Write([]byte(shortenedURL))
+			if _, err := w.Write([]byte(shortenedURL)); err != nil {
+				http.Error(w, "Failed to write response", http.StatusInternalServerError)
+				return
+			}
 			return
 		} else {
 			http.Error(w, "Failed to save URL", http.StatusBadRequest)

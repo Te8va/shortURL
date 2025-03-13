@@ -25,16 +25,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer logger.Sync()
 
 	sugar := logger.Sugar()
+
 	defer func() {
 		if err := logger.Sync(); err != nil {
 			sugar.Errorw("Failed to sync logger", "error", err)
 		}
 	}()
-
-	sugar.Infoln(*cfg)
 
 	var storage domain.RepositoryStore
 
