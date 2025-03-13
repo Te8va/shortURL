@@ -32,29 +32,24 @@ func (r *URLRepository) PingPg(ctx context.Context) error {
 func (r *URLRepository) Save(ctx context.Context, url string) (string, error) {
 
 	id := r.generateID()
-	query := `INSERT INTO urlshrt (short, original) 
-              VALUES ($1, $2) 
-              ON CONFLICT (original) 
-              DO UPDATE SET short = urlshrt.short 
-              RETURNING short;`
+    query := `INSERT INTO urlshrt (short, original) 
+              VALUES ($1, $2);`
 
-	var short string
-	err := r.db.QueryRow(ctx, query, id, url).Scan(&short)
+    _, err := r.db.Exec(ctx, query, id, url)
+    if err != nil {
+        var pgErr *pgconn.PgError
+        if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
+            row := r.db.QueryRow(ctx, "SELECT short FROM urlshrt WHERE original = $1", url)
+            var existingShort string
+            if errScan := row.Scan(&existingShort); errScan != nil {
+                return "", fmt.Errorf("ошибка получения существующего URL: %w", errScan)
+            }
+            return existingShort, appErrors.ErrURLExists
+        }
+        return "", fmt.Errorf("ошибка сохранения в БД: %w", err)
+    }
 
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
-			row := r.db.QueryRow(ctx, "SELECT short FROM urlshrt WHERE original = $1", url)
-			var existingShort string
-			if errScan := row.Scan(&existingShort); errScan != nil {
-				return "", fmt.Errorf("ошибка получения существующего URL: %w", errScan)
-			}
-			return existingShort, appErrors.ErrURLExists
-		}
-		return "", fmt.Errorf("ошибка сохранения в БД: %w", err)
-	}
-
-	return short, nil
+    return id, nil
 }
 
 func (r *URLRepository) Get(ctx context.Context, id string) (string, bool) {
