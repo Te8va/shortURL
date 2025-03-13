@@ -33,31 +33,28 @@ func (r *URLRepository) Save(ctx context.Context, url string) (string, error) {
 
 	id := r.generateID()
 	query := `INSERT INTO urlshrt (short, original) 
-        VALUES ($1, $2) 
-        ON CONFLICT (original) 
-        DO UPDATE SET short = EXCLUDED.short 
-        RETURNING short;`
+              VALUES ($1, $2) 
+              ON CONFLICT (original) 
+              DO UPDATE SET short = urlshrt.short 
+              RETURNING short;`
 
 	var short string
 	err := r.db.QueryRow(ctx, query, id, url).Scan(&short)
+
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
-			uErr := appErrors.ErrURLExists
-
 			row := r.db.QueryRow(ctx, "SELECT short FROM urlshrt WHERE original = $1", url)
 			var existingShort string
-			errScan := row.Scan(&existingShort)
-			if errScan != nil {
-				return "", errScan
+			if errScan := row.Scan(&existingShort); errScan != nil {
+				return "", fmt.Errorf("ошибка получения существующего URL: %w", errScan)
 			}
-
-			return existingShort, uErr
+			return existingShort, appErrors.ErrURLExists
 		}
-
 		return "", fmt.Errorf("ошибка сохранения в БД: %w", err)
 	}
-	return id, err
+
+	return short, nil
 }
 
 func (r *URLRepository) Get(ctx context.Context, id string) (string, bool) {
