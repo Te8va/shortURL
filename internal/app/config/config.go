@@ -11,12 +11,12 @@ import (
 type Config struct {
 	ServerAddress    string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
 	BaseURL          string `env:"BASE_URL" envDefault:"http://localhost:8080"`
-	FileStoragePath  string `env:"FILE_STORAGE_PATH" envDefault:"storage.json"`
+	FileStoragePath  string `env:"FILE_STORAGE_PATH"`
 	PostgresUser     string `env:"POSTGRES_USER"         envDefault:"shortURL"`
 	PostgresPassword string `env:"POSTGRES_PASSWORD"     envDefault:"shortURL"`
 	PostgresDB       string `env:"POSTGRES_DB"     envDefault:"shortURL"`
 	PostgresPort     int    `env:"POSTGRES_PORT"         envDefault:"5432"`
-	DatabaseDSN      string `env:"DATABASE_DSN"  envDefault:"postgres://shortURL:shortURL@localhost:5432/shortURL?sslmode=disable"`
+	DatabaseDSN      string `env:"DATABASE_DSN"`
 }
 
 func NewConfig() *Config {
@@ -43,7 +43,7 @@ func NewConfig() *Config {
 		cfg.FileStoragePath = *fileStorageFlag
 	}
 
-	if dsnEnv, exists := os.LookupEnv("DATABASE_DSN"); exists {
+	if dsnEnv, exists := os.LookupEnv("DATABASE_DSN"); exists && dsnEnv != "" {
 		cfg.DatabaseDSN = dsnEnv
 	} else if *databaseDSNFlag != "" {
 		cfg.DatabaseDSN = *databaseDSNFlag
