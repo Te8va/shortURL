@@ -2,13 +2,10 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math/rand"
 
 	appErrors "github.com/Te8va/shortURL/internal/app/errors"
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -30,39 +27,30 @@ func (r *URLRepository) PingPg(ctx context.Context) error {
 }
 
 func (r *URLRepository) Save(ctx context.Context, url string) (string, error) {
-
 	id := r.generateID()
-    query := `INSERT INTO urlshrt (short, original) 
-              VALUES ($1, $2) 
-              ON CONFLICT (original) 
-              DO NOTHING 
-              RETURNING short;`
 
-	var short string
-	err := r.db.QueryRow(ctx, query, id, url).Scan(&short)
+	query := `WITH ins AS (
+				INSERT INTO urlshrt (short, original) 
+				VALUES ($1, $2)
+				ON CONFLICT (original) DO NOTHING
+				RETURNING short
+			  )
+			  SELECT short FROM ins
+			  UNION ALL
+			  SELECT short FROM urlshrt WHERE original = $2 LIMIT 1;`
+
+	var existingShort string
+	err := r.db.QueryRow(ctx, query, id, url).Scan(&existingShort)
 
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
-			row := r.db.QueryRow(ctx, "SELECT short FROM urlshrt WHERE original = $1", url)
-			var existingShort string
-			if errScan := row.Scan(&existingShort); errScan != nil {
-				return "", fmt.Errorf("ошибка получения существующего URL: %w", errScan)
-			}
-			return existingShort, appErrors.ErrURLExists
-		}
-		return "", fmt.Errorf("ошибка сохранения в БД: %w", err)
+		return "", fmt.Errorf("ошибка при сохранении или получении short URL: %w", err)
 	}
 
-	if short == "" {
-		row := r.db.QueryRow(ctx, "SELECT short FROM urlshrt WHERE original = $1", url)
-		if err := row.Scan(&short); err != nil {
-			return "", fmt.Errorf("ошибка получения существующего URL: %w", err)
-		}
-		return short, appErrors.ErrURLExists
+	if existingShort != id {
+		return existingShort, appErrors.ErrURLExists
 	}
 
-	return short, nil
+	return existingShort, nil
 }
 
 func (r *URLRepository) Get(ctx context.Context, id string) (string, bool) {
