@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"compress/gzip"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -71,17 +70,17 @@ func (u *URLStore) PostHandler(w http.ResponseWriter, r *http.Request) {
 
 	id, err := u.srv.Save(r.Context(), originalURL)
 	if err != nil {
-        if errors.Is(err, appErrors.ErrURLExists) {
-            shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
-            w.Header().Set(ContentType, ContentTypeText)
-            w.WriteHeader(http.StatusConflict)
-            w.Write([]byte(shortenedURL))
-            return
-        } else {
-            http.Error(w, "Failed to save URL", http.StatusBadRequest)
-            return
-        }
-    }
+		if errors.Is(err, appErrors.ErrURLExists) {
+			shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
+			w.Header().Set(ContentType, ContentTypeText)
+			w.WriteHeader(http.StatusConflict)
+			w.Write([]byte(shortenedURL))
+			return
+		} else {
+			http.Error(w, "Failed to save URL", http.StatusBadRequest)
+			return
+		}
+	}
 
 	shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
 	w.Header().Set(ContentType, ContentTypeText)
@@ -169,24 +168,9 @@ func (u *URLStore) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	var batchReq []BatchRequest
-	var batchResp []BatchResponse
-
-	if r.Header.Get("Content-Encoding") == "gzip" {
-		gz, err := gzip.NewReader(r.Body)
-		if err != nil {
-			http.Error(w, "Ошибка при распаковке данных", http.StatusBadRequest)
-			return
-		}
-		defer gz.Close()
-		if err := json.NewDecoder(gz).Decode(&batchReq); err != nil {
-			http.Error(w, "Некорректный JSON", http.StatusBadRequest)
-			return
-		}
-	} else {
-		if err := json.NewDecoder(r.Body).Decode(&batchReq); err != nil {
-			http.Error(w, "Некорректный JSON", http.StatusBadRequest)
-			return
-		}
+	if err := json.NewDecoder(r.Body).Decode(&batchReq); err != nil {
+		http.Error(w, "Некорректный JSON", http.StatusBadRequest)
+		return
 	}
 
 	if len(batchReq) == 0 {
@@ -204,6 +188,7 @@ func (u *URLStore) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
 		urlMap[req.CorrelationID] = fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
 	}
 
+	var batchResp []BatchResponse
 	for _, req := range batchReq {
 		batchResp = append(batchResp, BatchResponse{
 			CorrelationID: req.CorrelationID,

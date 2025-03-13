@@ -4,22 +4,17 @@ import (
 	"log"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/Te8va/shortURL/internal/app/config"
+	"github.com/Te8va/shortURL/internal/app/domain"
 	"github.com/Te8va/shortURL/internal/app/handler"
 	"github.com/Te8va/shortURL/internal/app/middleware"
-	"github.com/Te8va/shortURL/internal/app/repository"
 	"github.com/Te8va/shortURL/internal/app/service"
 )
 
-func NewRouter(cfg *config.Config, db *pgxpool.Pool) chi.Router {
-	repo, err := repository.NewURLRepository(db, cfg.FileStoragePath)
-	if err != nil {
-		log.Println("Failed to initialize file repository:", err)
-	}
-	srv := service.NewURLService(repo)
+func NewRouter(cfg *config.Config, storage domain.RepositoryStore) chi.Router {
+	srv := service.NewURLService(storage)
 	store := handler.NewURLStore(cfg, srv)
 	r := chi.NewRouter()
 

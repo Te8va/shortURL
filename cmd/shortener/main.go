@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Te8va/shortURL/internal/app/config"
+	"github.com/Te8va/shortURL/internal/app/domain"
 	"github.com/Te8va/shortURL/internal/app/repository"
 	"github.com/Te8va/shortURL/internal/app/router"
 	"github.com/golang-migrate/migrate/v4"
@@ -35,28 +36,49 @@ func main() {
 
 	sugar.Infoln(*cfg)
 
-	m, err := migrate.New("file://internal/app/migrations", cfg.DatabaseDSN)
-	if err != nil {
-		sugar.Fatalw("Failed to initialize migrations", "error", err)
-	}
-
-	err = repository.ApplyMigrations(m)
-	if err != nil {
-		sugar.Fatalw("Failed to apply migrations", "error", err)
-	}
+	var storage domain.RepositoryStore
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	pool, err := repository.GetPgxPool(ctx, cfg.DatabaseDSN)
-	if err != nil {
-		sugar.Fatalw("Failed to create Postgres connection pool", "error", err)
+	if cfg.DatabaseDSN != "" {
+		sugar.Infoln("Using PostgreSQL as storage")
+
+		m, err := migrate.New("file://migrations", cfg.DatabaseDSN)
+		if err != nil {
+			sugar.Fatalw("Failed to initialize migrations", "error", err)
+		}
+
+		err = repository.ApplyMigrations(m)
+		if err != nil {
+			sugar.Fatalw("Failed to apply migrations", "error", err)
+		}
+
+		pool, err := repository.GetPgxPool(ctx, cfg.DatabaseDSN)
+		if err != nil {
+			sugar.Fatalw("Failed to create Postgres connection pool", "error", err)
+		}
+		defer pool.Close()
+
+		storage, err = repository.NewURLRepository(pool)
+		if err != nil {
+			sugar.Fatalw("Failed to initialize Postgres repository", "error", err)
+		}
+
+	} else if cfg.FileStoragePath != "" {
+		sugar.Infoln("Using JSON file as storage:", cfg.FileStoragePath)
+
+		storage, err = repository.NewJSONRepository(cfg.FileStoragePath)
+		if err != nil {
+			sugar.Fatalw("Failed to initialize JSON repository", "error", err)
+		}
+
+	} else {
+		sugar.Infoln("Using in-memory storage")
+		storage = repository.NewMemoryRepository()
 	}
 
-	defer pool.Close()
-
-	sugar.Infow("Migrations applied successfully")
-	handler := router.NewRouter(cfg, pool)
+	handler := router.NewRouter(cfg, storage)
 
 	server := &http.Server{
 		Addr:    cfg.ServerAddress,

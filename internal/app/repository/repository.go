@@ -2,11 +2,9 @@ package repository
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
-	"os"
 
 	appErrors "github.com/Te8va/shortURL/internal/app/errors"
 	"github.com/jackc/pgconn"
@@ -14,31 +12,12 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const length = 8
-
 type URLRepository struct {
-	db   *pgxpool.Pool
-	file string
+	db *pgxpool.Pool
 }
 
-func NewURLRepository(db *pgxpool.Pool, filePath string) (*URLRepository, error) {
-	if db == nil {
-		return nil, fmt.Errorf("пул подключений к базе данных равен nil")
-	}
-
-	store := &URLRepository{
-		db:   db,
-		file: filePath,
-	}
-
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		err := os.WriteFile(filePath, []byte("{}"), 0666)
-		if err != nil {
-			return nil, fmt.Errorf("ошибка создания файла %s: %w", filePath, err)
-		}
-	}
-
-	return store, nil
+func NewURLRepository(db *pgxpool.Pool) (*URLRepository, error) {
+	return &URLRepository{db: db}, nil
 }
 
 func (r *URLRepository) PingPg(ctx context.Context) error {
@@ -51,9 +30,6 @@ func (r *URLRepository) PingPg(ctx context.Context) error {
 }
 
 func (r *URLRepository) Save(ctx context.Context, url string) (string, error) {
-	if r == nil {
-		return "", fmt.Errorf("URLRepository не инициализирован")
-	}
 
 	id := r.generateID()
 	query := `INSERT INTO urlshrt (short, original) 
@@ -81,15 +57,6 @@ func (r *URLRepository) Save(ctx context.Context, url string) (string, error) {
 
 		return "", fmt.Errorf("ошибка сохранения в БД: %w", err)
 	}
-
-	if short != id {
-		return short, appErrors.ErrURLExists
-	}
-
-	if err := r.saveToFile(id, url); err != nil {
-		return "", fmt.Errorf("ошибка сохранения в файл: %w", err)
-	}
-
 	return id, err
 }
 
@@ -103,36 +70,6 @@ func (r *URLRepository) Get(ctx context.Context, id string) (string, bool) {
 	}
 
 	return "", false
-}
-
-func (r *URLRepository) saveToFile(id, url string) error {
-	file, err := os.OpenFile(r.file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
-		return fmt.Errorf("ошибка открытия файла %s: %w", r.file, err)
-	}
-	defer file.Close()
-
-	data := make(map[string]string)
-	fileData, err := os.ReadFile(r.file)
-	if err == nil && len(fileData) > 0 {
-		if err := json.Unmarshal(fileData, &data); err != nil {
-			return fmt.Errorf("ошибка десериализации данных из файла: %w", err)
-		}
-	}
-
-	data[id] = url
-
-	jsonData, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		return fmt.Errorf("ошибка сериализации данных: %w", err)
-	}
-
-	_, err = file.WriteAt(jsonData, 0)
-	if err != nil {
-		return fmt.Errorf("ошибка записи в файл %s: %w", r.file, err)
-	}
-
-	return err
 }
 
 func (r *URLRepository) SaveBatch(ctx context.Context, urls map[string]string) (map[string]string, error) {
@@ -150,10 +87,6 @@ func (r *URLRepository) SaveBatch(ctx context.Context, urls map[string]string) (
 		_, err := tx.Exec(ctx, query, id, originalURL)
 		if err != nil {
 			return nil, fmt.Errorf("ошибка сохранения URL в БД: %w", err)
-		}
-
-		if err := r.saveToFile(id, originalURL); err != nil {
-			return nil, fmt.Errorf("ошибка сохранения в файл: %w", err)
 		}
 
 		result[correlationID] = id
