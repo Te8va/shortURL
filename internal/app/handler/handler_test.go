@@ -66,7 +66,7 @@ func TestPostHandler(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			if testCase.wantCode == http.StatusCreated {
-				mockSaver.EXPECT().Save(gomock.Any(), testCase.body).Return(testCase.mockReturn).Times(1)
+				mockSaver.EXPECT().Save(gomock.Any(), testCase.body).Return(testCase.mockReturn, nil).Times(1)
 			}
 
 			req, err := http.NewRequest(http.MethodPost, "/", bytes.NewBufferString(testCase.body))

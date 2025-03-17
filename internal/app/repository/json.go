@@ -36,10 +36,6 @@ func NewJSONRepository(filePath string) (*JSONRepository, error) {
 	return repo, nil
 }
 
-// func (r *JSONRepository) PingPg(ctx context.Context) error {
-// 	return nil
-// }
-
 func (r *JSONRepository) Save(ctx context.Context, url string) (string, error) {
 	id := r.generateID()
 

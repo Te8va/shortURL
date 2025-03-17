@@ -15,10 +15,6 @@ func NewMemoryRepository() *MemoryRepository {
 	}
 }
 
-// func (r *MemoryRepository) PingPg(ctx context.Context) error {
-// 	return nil
-// }
-
 func (r *MemoryRepository) Save(ctx context.Context, url string) (string, error) {
 	id := r.generateID()
 	r.store[id] = url
