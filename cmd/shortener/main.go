@@ -1,22 +1,13 @@
 package main
 
 import (
-	"net/http"
-
-	"github.com/Te8va/shortURL/internal/app/config"
-	"github.com/Te8va/shortURL/internal/app/router"
 	"go.uber.org/zap"
+
+	"github.com/Te8va/shortURL/internal/app/app"
 )
 
 func main() {
-	cfg := config.NewConfig()
-
-	logger, err := zap.NewDevelopment()
-	if err != nil {
-		panic(err)
-	}
-	defer logger.Sync()
-
+	logger, _ := zap.NewProduction()
 	sugar := logger.Sugar()
 	defer func() {
 		if err := logger.Sync(); err != nil {
@@ -24,11 +15,12 @@ func main() {
 		}
 	}()
 
-	sugar.Infow(
-		"Starting server",
-		"addr", cfg.ServerAddress,
-	)
-	if err := http.ListenAndServe(cfg.ServerAddress, router.NewRouter(cfg)); err != nil {
-		sugar.Fatalw(err.Error(), "event", "start server")
+	appInstance, err := app.NewApp()
+	if err != nil {
+		sugar.Fatalw("Ошибка инициализации приложения", "error", err)
+	}
+
+	if err := appInstance.Run(); err != nil {
+		sugar.Fatalw("Ошибка во время работы приложения", "error", err)
 	}
 }

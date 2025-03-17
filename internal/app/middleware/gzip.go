@@ -15,6 +15,7 @@ type gzipWriter struct {
 func (w gzipWriter) Write(b []byte) (int, error) {
 	return w.Writer.Write(b)
 }
+
 func gzipHandle(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Content-Type") != "application/json" && r.Header.Get("Content-Type") != "text/html" && r.Header.Get("Content-Type") != "application/x-gzip" {
@@ -30,7 +31,7 @@ func gzipHandle(h http.Handler) http.Handler {
 			}
 			defer gz.Close()
 
-			r.Body= gz
+			r.Body = gz
 			r.Header.Set("Content-Type", "text/plain")
 		}
 
@@ -41,7 +42,9 @@ func gzipHandle(h http.Handler) http.Handler {
 
 		gz, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
 		if err != nil {
-			io.WriteString(w, err.Error())
+			if _, writeErr := io.WriteString(w, err.Error()); writeErr != nil {
+				http.Error(w, "Failed to write error message", http.StatusInternalServerError)
+			}
 			return
 		}
 

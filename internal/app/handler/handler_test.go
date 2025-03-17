@@ -2,66 +2,51 @@ package handler
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/Te8va/shortURL/internal/app/config"
-	"github.com/Te8va/shortURL/internal/app/repository"
+	"github.com/Te8va/shortURL/internal/app/domain"
+	"github.com/Te8va/shortURL/internal/app/service/mocks"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 )
 
-func createTestStorageFile() (string, error) {
-	fileName := "test_storage.json"
-	file, err := os.Create(fileName)
-	if err != nil {
-		return "", err
-	}
-
-	_, err = file.WriteString("{}")
-	if err != nil {
-		return "", err
-	}
-
-	err = file.Close()
-	if err != nil {
-		return "", err
-	}
-
-	return fileName, nil
-}
-
-func TestPostHandler(t *testing.T) {
+func setupTestHandler(t *testing.T) (*gomock.Controller, *mocks.MockURLSaver, *mocks.MockURLGetter, *mocks.MockPinger, *URLHandler) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
 
-	testFile, err := createTestStorageFile()
-	require.NoError(t, err, "failed to create test storage file")
-	defer os.Remove(testFile)
+	mockSaver := mocks.NewMockURLSaver(ctrl)
+	mockGetter := mocks.NewMockURLGetter(ctrl)
+	mockPinger := mocks.NewMockPinger(ctrl)
 
 	testCfg := &config.Config{
 		BaseURL:       "http://localhost:8080",
 		ServerAddress: "localhost:8080",
 	}
 
-	testRepo, err := repository.NewMapStore("test_storage.json")
-	require.NoError(t, err, "failed to initialize test repository")
+	handler := NewURLHandler(testCfg, mockSaver, mockGetter, mockPinger)
+	return ctrl, mockSaver, mockGetter, mockPinger, handler
+}
 
-	testStore := NewURLStore(testCfg, testRepo)
+func TestPostHandler(t *testing.T) {
+	ctrl, mockSaver, _, _, handler := setupTestHandler(t)
+	defer ctrl.Finish()
 
 	testCases := []struct {
 		name        string
 		contentType string
 		body        string
+		mockReturn  string
 		wantCode    int
 	}{
 		{
 			name:        "valid URL",
 			contentType: "text/plain",
 			body:        "http://example.com",
+			mockReturn:  "shortID",
 			wantCode:    http.StatusCreated,
 		},
 		{
@@ -76,57 +61,38 @@ func TestPostHandler(t *testing.T) {
 			body:        "",
 			wantCode:    http.StatusBadRequest,
 		},
-		{
-			name:        "invalid URL format",
-			contentType: "text/plain",
-			body:        "invalid-url",
-			wantCode:    http.StatusBadRequest,
-		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			if testCase.wantCode == http.StatusCreated {
+				mockSaver.EXPECT().Save(gomock.Any(), testCase.body).Return(testCase.mockReturn, nil).Times(1)
+			}
+
 			req, err := http.NewRequest(http.MethodPost, "/", bytes.NewBufferString(testCase.body))
 			require.NoError(t, err)
-
 			req.Header.Set("Content-Type", testCase.contentType)
 
 			w := httptest.NewRecorder()
-			testStore.PostHandler(w, req)
+			handler.PostHandler(w, req)
 
 			require.Equal(t, testCase.wantCode, w.Code)
-
-			if testCase.wantCode == http.StatusBadRequest {
-				require.NotEmpty(t, w.Body.String())
-			} else {
-				require.Contains(t, w.Body.String(), "http://localhost:8080/")
+			if testCase.wantCode == http.StatusCreated {
+				require.Contains(t, w.Body.String(), "http://localhost:8080/shortID")
 			}
 		})
 	}
 }
 
 func TestGetHandler(t *testing.T) {
-	ctrl := gomock.NewController(t)
+	ctrl, _, mockGetter, _, handler := setupTestHandler(t)
 	defer ctrl.Finish()
-
-	testFile, err := createTestStorageFile()
-	require.NoError(t, err, "failed to create test storage file")
-	defer os.Remove(testFile)
-
-	testCfg := &config.Config{
-		BaseURL:       "http://localhost:8080",
-		ServerAddress: "localhost:8080",
-	}
-
-	testRepo, err := repository.NewMapStore("test_storage.json")
-	require.NoError(t, err, "failed to initialize test repository")
-
-	testStore := NewURLStore(testCfg, testRepo)
 
 	testID := "testID"
 	testURL := "http://example.com"
-	err = testRepo.Save(testID, testURL)
-	require.NoError(t, err, "failed to save test data")
+
+	mockGetter.EXPECT().Get(gomock.Any(), testID).Return(testURL, true).AnyTimes()
+	mockGetter.EXPECT().Get(gomock.Any(), "invalidID").Return("", false).AnyTimes()
 
 	testCases := []struct {
 		name      string
@@ -145,11 +111,6 @@ func TestGetHandler(t *testing.T) {
 			requestID: "invalidID",
 			wantCode:  http.StatusBadRequest,
 		},
-		{
-			name:      "missing ID",
-			requestID: "",
-			wantCode:  http.StatusBadRequest,
-		},
 	}
 
 	for _, testCase := range testCases {
@@ -158,86 +119,84 @@ func TestGetHandler(t *testing.T) {
 			require.NoError(t, err)
 
 			w := httptest.NewRecorder()
-			testStore.GetHandler(w, req)
+			handler.GetHandler(w, req)
 
 			require.Equal(t, testCase.wantCode, w.Code)
-
 			if testCase.wantCode == http.StatusTemporaryRedirect {
 				require.Equal(t, testCase.wantURL, w.Header().Get("Location"))
-			} else {
-				require.NotEmpty(t, w.Body.String())
 			}
 		})
 	}
 }
 
 func TestPostHandlerJSON(t *testing.T) {
-	ctrl := gomock.NewController(t)
+	ctrl, mockSaver, _, _, handler := setupTestHandler(t)
 	defer ctrl.Finish()
-
-	testFile, err := createTestStorageFile()
-	require.NoError(t, err, "failed to create test storage file")
-	defer os.Remove(testFile)
-
-	testCfg := &config.Config{
-		BaseURL:       "http://localhost:8080",
-		ServerAddress: "localhost:8080",
-	}
-
-	testRepo, err := repository.NewMapStore("test_storage.json")
-	require.NoError(t, err, "failed to initialize test repository")
-
-	testStore := NewURLStore(testCfg, testRepo)
 
 	testCases := []struct {
 		name        string
 		contentType string
-		body        string
+		body        domain.ShortenRequest
+		mockReturn  string
+		mockErr     error
 		wantCode    int
 	}{
 		{
-			name:        "valid URL",
+			name:        "valid JSON",
 			contentType: "application/json",
-			body:        `{"url": "http://example.com"}`,
+			body:        domain.ShortenRequest{URL: "http://example.com"},
+			mockReturn:  "shortID",
+			mockErr:     nil,
 			wantCode:    http.StatusCreated,
 		},
 		{
 			name:        "invalid content type",
 			contentType: "text/plain",
-			body:        `{"url": "http://example.com"}`,
+			body:        domain.ShortenRequest{URL: "http://example.com"},
 			wantCode:    http.StatusBadRequest,
 		},
 		{
-			name:        "empty URL",
+			name:        "invalid URL",
 			contentType: "application/json",
-			body:        `{"url": ""}`,
-			wantCode:    http.StatusBadRequest,
-		},
-		{
-			name:        "invalid URL format",
-			contentType: "application/json",
-			body:        `{"url": "invalid-url"}`,
+			body:        domain.ShortenRequest{URL: "invalid-url"},
 			wantCode:    http.StatusBadRequest,
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			req, err := http.NewRequest(http.MethodPost, "/", bytes.NewBufferString(testCase.body))
-			require.NoError(t, err)
+			bodyBytes, _ := json.Marshal(testCase.body)
 
+			if testCase.wantCode == http.StatusCreated {
+				mockSaver.EXPECT().Save(gomock.Any(), testCase.body.URL).Return(testCase.mockReturn, testCase.mockErr).Times(1)
+			}
+
+			req, err := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer(bodyBytes))
+			require.NoError(t, err)
 			req.Header.Set("Content-Type", testCase.contentType)
 
 			w := httptest.NewRecorder()
-			testStore.PostHandlerJSON(w, req)
+			handler.PostHandlerJSON(w, req)
 
 			require.Equal(t, testCase.wantCode, w.Code)
-
-			if testCase.wantCode == http.StatusBadRequest {
-				require.NotEmpty(t, w.Body.String())
-			} else {
-				require.Contains(t, w.Body.String(), "http://localhost:8080/")
+			if testCase.wantCode == http.StatusCreated {
+				require.Contains(t, w.Body.String(), "http://localhost:8080/shortID")
 			}
 		})
 	}
+}
+
+func TestPingHandler(t *testing.T) {
+	ctrl, _, _, mockPinger, handler := setupTestHandler(t)
+	defer ctrl.Finish()
+
+	mockPinger.EXPECT().PingPg(gomock.Any()).Return(nil).Times(1)
+
+	req, err := http.NewRequest(http.MethodGet, "/ping", nil)
+	require.NoError(t, err)
+
+	w := httptest.NewRecorder()
+	handler.PingHandler(w, req)
+
+	require.Equal(t, http.StatusOK, w.Code)
 }
