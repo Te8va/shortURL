@@ -2,30 +2,46 @@ package service
 
 import (
 	"context"
-
-	"github.com/Te8va/shortURL/internal/app/domain"
 )
 
-type URLService struct {
-	repo domain.RepositoryStore
+//go:generate mockgen -destination=mocks/url_saver_mock.gen.go -package=mocks . URLSaver
+type URLSaver interface {
+	Save(ctx context.Context, url string) (string, error)
+	SaveBatch(ctx context.Context, urls map[string]string) (map[string]string, error)
 }
 
-func NewURLService(repo domain.RepositoryStore) *URLService {
-	return &URLService{repo: repo}
+//go:generate mockgen -destination=mocks/url_getter_mock.gen.go -package=mocks . URLGetter
+type URLGetter interface {
+	Get(ctx context.Context, id string) (string, bool)
+}
+
+//go:generate mockgen -destination=mocks/pinger_mock.gen.go -package=mocks . Pinger
+type Pinger interface {
+	PingPg(ctx context.Context) error
+}
+
+type URLService struct {
+	saver  URLSaver
+	getter URLGetter
+	pinger Pinger
+}
+
+func NewURLService(saver URLSaver, getter URLGetter, pinger Pinger) *URLService {
+	return &URLService{saver: saver, getter: getter, pinger: pinger}
 }
 
 func (s *URLService) PingPg(ctx context.Context) error {
-	return s.repo.PingPg(ctx)
+	return s.pinger.PingPg(ctx)
 }
 
 func (s *URLService) Save(ctx context.Context, url string) (string, error) {
-	return s.repo.Save(ctx, url)
+	return s.saver.Save(ctx, url)
 }
 
 func (s *URLService) Get(ctx context.Context, id string) (string, bool) {
-	return s.repo.Get(ctx, id)
+	return s.getter.Get(ctx, id)
 }
 
 func (s *URLService) SaveBatch(ctx context.Context, urls map[string]string) (map[string]string, error) {
-	return s.repo.SaveBatch(ctx, urls)
+	return s.saver.SaveBatch(ctx, urls)
 }

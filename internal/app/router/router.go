@@ -7,15 +7,14 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/Te8va/shortURL/internal/app/config"
-	"github.com/Te8va/shortURL/internal/app/domain"
 	"github.com/Te8va/shortURL/internal/app/handler"
 	"github.com/Te8va/shortURL/internal/app/middleware"
 	"github.com/Te8va/shortURL/internal/app/service"
 )
 
-func NewRouter(cfg *config.Config, storage domain.RepositoryStore) chi.Router {
-	srv := service.NewURLService(storage)
-	store := handler.NewURLStore(cfg, srv)
+func NewRouter(cfg *config.Config, saver service.URLSaver, getter service.URLGetter, pinger service.Pinger) chi.Router {
+	srv := service.NewURLService(saver, getter, pinger)
+	store := handler.NewURLHandler(cfg, srv, srv, srv)
 	r := chi.NewRouter()
 
 	if err := middleware.Initialize("info"); err != nil {

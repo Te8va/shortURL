@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/Te8va/shortURL/internal/app/config"
 	"github.com/Te8va/shortURL/internal/app/domain"
@@ -21,20 +23,37 @@ const (
 	ContentTypeApp  = "application/json"
 )
 
-type URLStore struct {
-	srv domain.ServiceStore
-	cfg *config.Config
+type URLSaver interface {
+	Save(ctx context.Context, url string) (string, error)
+	SaveBatch(ctx context.Context, urls map[string]string) (map[string]string, error)
 }
 
-func NewURLStore(cfg *config.Config, srv domain.ServiceStore) *URLStore {
-	return &URLStore{
-		srv: srv,
-		cfg: cfg,
+type URLGetter interface {
+	Get(ctx context.Context, id string) (string, bool)
+}
+
+type Pinger interface {
+	PingPg(ctx context.Context) error
+}
+
+type URLHandler struct {
+	saver  URLSaver
+	getter URLGetter
+	pinger Pinger
+	cfg    *config.Config
+}
+
+func NewURLHandler(cfg *config.Config, saver URLSaver, getter URLGetter, pinger Pinger) *URLHandler {
+	return &URLHandler{
+		saver:  saver,
+		getter: getter,
+		pinger: pinger,
+		cfg:    cfg,
 	}
 }
 
-func (u *URLStore) PingHandler(w http.ResponseWriter, r *http.Request) {
-	err := u.srv.PingPg(r.Context())
+func (u *URLHandler) PingHandler(w http.ResponseWriter, r *http.Request) {
+	err := u.pinger.PingPg(r.Context())
 	if err != nil {
 		http.Error(w, "Database connection failed", http.StatusInternalServerError)
 		return
@@ -42,9 +61,7 @@ func (u *URLStore) PingHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (u *URLStore) PostHandler(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
+func (u *URLHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 	if !strings.HasPrefix(r.Header.Get(ContentType), ContentTypeText) {
 		http.Error(w, "Content-Type must be text/plain", http.StatusBadRequest)
 		return
@@ -68,21 +85,22 @@ func (u *URLStore) PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := u.srv.Save(r.Context(), originalURL)
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	id, err := u.saver.Save(ctx, originalURL)
 	if err != nil {
-		if errors.Is(err, appErrors.ErrURLExists) {
-			shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
-			w.Header().Set(ContentType, ContentTypeText)
-			w.WriteHeader(http.StatusConflict)
-			if _, err := w.Write([]byte(shortenedURL)); err != nil {
-				http.Error(w, "Failed to write response", http.StatusInternalServerError)
-				return
-			}
-			return
-		} else {
+		if !errors.Is(err, appErrors.ErrURLExists) {
 			http.Error(w, "Failed to save URL", http.StatusBadRequest)
 			return
 		}
+		shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
+		w.Header().Set(ContentType, ContentTypeText)
+		w.WriteHeader(http.StatusConflict)
+		if _, err := w.Write([]byte(shortenedURL)); err != nil {
+			http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		}
+		return
 	}
 
 	shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
@@ -94,14 +112,14 @@ func (u *URLStore) PostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (u *URLStore) GetHandler(w http.ResponseWriter, r *http.Request) {
+func (u *URLHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/")
 	if id == "" {
 		http.Error(w, "Missing or invalid ID in the URL path", http.StatusBadRequest)
 		return
 	}
 
-	originalURL, exists := u.srv.Get(r.Context(), id)
+	originalURL, exists := u.getter.Get(r.Context(), id)
 	if !exists {
 		http.Error(w, "URL not found", http.StatusBadRequest)
 		return
@@ -111,9 +129,7 @@ func (u *URLStore) GetHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func (u *URLStore) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
+func (u *URLHandler) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
 	if !strings.HasPrefix(r.Header.Get(ContentType), ContentTypeApp) {
 		http.Error(w, "Content-Type must be application/json", http.StatusBadRequest)
 		return
@@ -130,7 +146,7 @@ func (u *URLStore) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := u.srv.Save(r.Context(), req.URL)
+	id, err := u.saver.Save(r.Context(), req.URL)
 	shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
 
 	if errors.Is(err, appErrors.ErrURLExists) {
@@ -167,9 +183,7 @@ type BatchResponse struct {
 	ShortURL      string `json:"short_url"`
 }
 
-func (u *URLStore) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
+func (u *URLHandler) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
 	var batchReq []BatchRequest
 	if err := json.NewDecoder(r.Body).Decode(&batchReq); err != nil {
 		http.Error(w, "Некорректный JSON", http.StatusBadRequest)
@@ -183,7 +197,7 @@ func (u *URLStore) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
 
 	urlMap := make(map[string]string)
 	for _, req := range batchReq {
-		id, err := u.srv.Save(r.Context(), req.OriginalURL)
+		id, err := u.saver.Save(r.Context(), req.OriginalURL)
 		if err != nil {
 			http.Error(w, "Ошибка сохранения URL", http.StatusInternalServerError)
 			return
