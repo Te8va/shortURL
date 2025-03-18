@@ -48,3 +48,18 @@ func (mr *MockURLGetterMockRecorder) Get(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockURLGetter)(nil).Get), arg0, arg1)
 }
+
+// GetUserURLs mocks base method.
+func (m *MockURLGetter) GetUserURLs(arg0 context.Context, arg1 int) ([]map[string]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserURLs", arg0, arg1)
+	ret0, _ := ret[0].([]map[string]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserURLs indicates an expected call of GetUserURLs.
+func (mr *MockURLGetterMockRecorder) GetUserURLs(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserURLs", reflect.TypeOf((*MockURLGetter)(nil).GetUserURLs), arg0, arg1)
+}

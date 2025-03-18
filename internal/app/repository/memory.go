@@ -15,7 +15,7 @@ func NewMemoryRepository() *MemoryRepository {
 	}
 }
 
-func (r *MemoryRepository) Save(ctx context.Context, url string) (string, error) {
+func (r *MemoryRepository) Save(ctx context.Context, userID int, url string) (string, error) {
 	id := r.generateID()
 	r.store[id] = url
 
@@ -28,7 +28,7 @@ func (r *MemoryRepository) Get(ctx context.Context, id string) (string, bool) {
 	return url, exists
 }
 
-func (r *MemoryRepository) SaveBatch(ctx context.Context, urls map[string]string) (map[string]string, error) {
+func (r *MemoryRepository) SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error) {
 	result := make(map[string]string)
 	for correlationID, originalURL := range urls {
 		id := r.generateID()
@@ -55,4 +55,8 @@ func (r *MemoryRepository) generateID() string {
 			return id
 		}
 	}
+}
+
+func (r *MemoryRepository) GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error) {
+	return []map[string]string{}, nil
 }

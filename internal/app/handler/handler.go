@@ -24,12 +24,13 @@ const (
 )
 
 type URLSaver interface {
-	Save(ctx context.Context, url string) (string, error)
-	SaveBatch(ctx context.Context, urls map[string]string) (map[string]string, error)
+	Save(ctx context.Context, userID int, url string) (string, error)
+	SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error)
 }
 
 type URLGetter interface {
 	Get(ctx context.Context, id string) (string, bool)
+	GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error)
 }
 
 type Pinger interface {
@@ -67,6 +68,8 @@ func (u *URLHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userID, _ := r.Context().Value("userID").(int)
+
 	originalURLBytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Failed to read request body", http.StatusBadRequest)
@@ -88,7 +91,7 @@ func (u *URLHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 
-	id, err := u.saver.Save(ctx, originalURL)
+	id, err := u.saver.Save(ctx, userID, originalURL)
 	if err != nil {
 		if !errors.Is(err, appErrors.ErrURLExists) {
 			http.Error(w, "Failed to save URL", http.StatusBadRequest)
@@ -135,6 +138,8 @@ func (u *URLHandler) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userID, _ := r.Context().Value("userID").(int)
+
 	var req domain.ShortenRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
@@ -146,7 +151,7 @@ func (u *URLHandler) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := u.saver.Save(r.Context(), req.URL)
+	id, err := u.saver.Save(r.Context(), userID, req.URL)
 	shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
 
 	if errors.Is(err, appErrors.ErrURLExists) {
@@ -184,6 +189,8 @@ type BatchResponse struct {
 }
 
 func (u *URLHandler) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
+	userID, _ := r.Context().Value("userID").(int)
+
 	var batchReq []BatchRequest
 	if err := json.NewDecoder(r.Body).Decode(&batchReq); err != nil {
 		http.Error(w, "Некорректный JSON", http.StatusBadRequest)
@@ -197,7 +204,7 @@ func (u *URLHandler) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
 
 	urlMap := make(map[string]string)
 	for _, req := range batchReq {
-		id, err := u.saver.Save(r.Context(), req.OriginalURL)
+		id, err := u.saver.Save(r.Context(), userID, req.OriginalURL)
 		if err != nil {
 			http.Error(w, "Ошибка сохранения URL", http.StatusInternalServerError)
 			return
@@ -218,4 +225,27 @@ func (u *URLHandler) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(batchResp); err != nil {
 		http.Error(w, "Ошибка записи ответа", http.StatusInternalServerError)
 	}
+}
+
+func (u *URLHandler) GetUserURLsHandler(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value("userID").(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	urls, err := u.getter.GetUserURLs(r.Context(), userID)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	if urls == nil {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(urls)
 }

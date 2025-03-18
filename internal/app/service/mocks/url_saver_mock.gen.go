@@ -35,31 +35,31 @@ func (m *MockURLSaver) EXPECT() *MockURLSaverMockRecorder {
 }
 
 // Save mocks base method.
-func (m *MockURLSaver) Save(arg0 context.Context, arg1 string) (string, error) {
+func (m *MockURLSaver) Save(arg0 context.Context, arg1 int, arg2 string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", arg0, arg1)
+	ret := m.ctrl.Call(m, "Save", arg0, arg1, arg2)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Save indicates an expected call of Save.
-func (mr *MockURLSaverMockRecorder) Save(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockURLSaverMockRecorder) Save(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockURLSaver)(nil).Save), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockURLSaver)(nil).Save), arg0, arg1, arg2)
 }
 
 // SaveBatch mocks base method.
-func (m *MockURLSaver) SaveBatch(arg0 context.Context, arg1 map[string]string) (map[string]string, error) {
+func (m *MockURLSaver) SaveBatch(arg0 context.Context, arg1 int, arg2 map[string]string) (map[string]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveBatch", arg0, arg1)
+	ret := m.ctrl.Call(m, "SaveBatch", arg0, arg1, arg2)
 	ret0, _ := ret[0].(map[string]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SaveBatch indicates an expected call of SaveBatch.
-func (mr *MockURLSaverMockRecorder) SaveBatch(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockURLSaverMockRecorder) SaveBatch(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveBatch", reflect.TypeOf((*MockURLSaver)(nil).SaveBatch), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveBatch", reflect.TypeOf((*MockURLSaver)(nil).SaveBatch), arg0, arg1, arg2)
 }

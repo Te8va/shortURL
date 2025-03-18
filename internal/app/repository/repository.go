@@ -26,12 +26,12 @@ func (r *URLRepository) PingPg(ctx context.Context) error {
 	return nil
 }
 
-func (r *URLRepository) Save(ctx context.Context, url string) (string, error) {
+func (r *URLRepository) Save(ctx context.Context, userID int, url string) (string, error) {
 	id := r.generateID()
 
 	query := `WITH ins AS (
-				INSERT INTO urlshrt (short, original) 
-				VALUES ($1, $2)
+				INSERT INTO urlshrt (short, original, user_id) 
+				VALUES ($1, $2, $3)
 				ON CONFLICT (original) DO NOTHING
 				RETURNING short
 			  )
@@ -40,7 +40,7 @@ func (r *URLRepository) Save(ctx context.Context, url string) (string, error) {
 			  SELECT short FROM urlshrt WHERE original = $2 LIMIT 1;`
 
 	var existingShort string
-	err := r.db.QueryRow(ctx, query, id, url).Scan(&existingShort)
+	err := r.db.QueryRow(ctx, query, id, url, userID).Scan(&existingShort)
 
 	if err != nil {
 		return "", fmt.Errorf("ошибка при сохранении или получении short URL: %w", err)
@@ -65,7 +65,7 @@ func (r *URLRepository) Get(ctx context.Context, id string) (string, bool) {
 	return "", false
 }
 
-func (r *URLRepository) SaveBatch(ctx context.Context, urls map[string]string) (map[string]string, error) {
+func (r *URLRepository) SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка начала транзакции: %w", err)
@@ -79,7 +79,7 @@ func (r *URLRepository) SaveBatch(ctx context.Context, urls map[string]string) (
 	result := make(map[string]string)
 	for correlationID, originalURL := range urls {
 		id := r.generateID()
-		query := `INSERT INTO urlshrt (short, original) VALUES ($1, $2);`
+		query := `INSERT INTO urlshrt (short, original, user_id) VALUES ($1, $2, $3);`
 
 		_, err := tx.Exec(ctx, query, id, originalURL)
 		if err != nil {
@@ -116,4 +116,32 @@ func (r *URLRepository) generateID() string {
 			return id
 		}
 	}
+}
+
+func (r *URLRepository) GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error) {
+	query := `SELECT short, original FROM urlshrt WHERE user_id = $1;`
+
+	rows, err := r.db.Query(ctx, query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка при получении URL пользователя: %w", err)
+	}
+	defer rows.Close()
+
+	var urls []map[string]string
+	for rows.Next() {
+		var shortURL, originalURL string
+		if err := rows.Scan(&shortURL, &originalURL); err != nil {
+			return nil, fmt.Errorf("ошибка при сканировании URL: %w", err)
+		}
+		urls = append(urls, map[string]string{
+			"short_url":    shortURL,
+			"original_url": originalURL,
+		})
+	}
+
+	if len(urls) == 0 {
+		return nil, nil
+	}
+
+	return urls, nil
 }

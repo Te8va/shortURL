@@ -17,6 +17,7 @@ type Config struct {
 	PostgresDB       string `env:"POSTGRES_DB"     envDefault:"shortURL"`
 	PostgresPort     int    `env:"POSTGRES_PORT"         envDefault:"5432"`
 	DatabaseDSN      string `env:"DATABASE_DSN"`
+	JWTKey           string `env:"JWT_KEY"               envDefault:"supermegasecret"`
 }
 
 func NewConfig() *Config {

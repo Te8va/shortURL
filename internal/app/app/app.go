@@ -18,12 +18,12 @@ import (
 )
 
 type App struct {
-	cfg     *config.Config
-	logger  *zap.SugaredLogger
+	cfg    *config.Config
+	logger *zap.SugaredLogger
 	saver  service.URLSaver
 	getter service.URLGetter
 	pinger service.Pinger
-	server  *http.Server
+	server *http.Server
 }
 
 func NewApp() (*App, error) {

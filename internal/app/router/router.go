@@ -21,12 +21,14 @@ func NewRouter(cfg *config.Config, saver service.URLSaver, getter service.URLGet
 		log.Println("Failed to initialize middleware:", err)
 	}
 
+	r.Use(middleware.AuthMiddleware(cfg.JWTKey))
 	r.Use(middleware.WithLogging)
 	r.Post("/", store.PostHandler)
 	r.Get("/{id}", store.GetHandler)
 	r.Post("/api/shorten", store.PostHandlerJSON)
 	r.Post("/api/shorten/batch", store.PostHandlerBatch)
 	r.Get("/ping", store.PingHandler)
+	r.Get("/api/user/urls", store.GetUserURLsHandler)
 
 	return r
 }
