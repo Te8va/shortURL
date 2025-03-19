@@ -88,7 +88,7 @@ func (a *App) initStorage() error {
 	} else if a.cfg.FileStoragePath != "" {
 		a.logger.Infoln("Using JSON file as storage:", a.cfg.FileStoragePath)
 
-		storage, err := repository.NewJSONRepository(a.cfg.FileStoragePath)
+		storage, err := repository.NewJSONRepository(a.cfg.FileStoragePath, a.cfg)
 		if err != nil {
 			a.logger.Fatalw("Failed to initialize JSON repository", "error", err)
 		}
@@ -99,7 +99,7 @@ func (a *App) initStorage() error {
 
 	} else {
 		a.logger.Infoln("Using in-memory storage")
-		storage := repository.NewMemoryRepository()
+		storage := repository.NewMemoryRepository(a.cfg)
 
 		a.saver = storage
 		a.getter = storage
