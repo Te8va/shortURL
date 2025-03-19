@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -126,6 +127,7 @@ func (u *URLHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Printf("Redirecting ID %s to URL: %s", id, originalURL)
 	w.Header().Set("Location", originalURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }

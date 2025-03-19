@@ -8,6 +8,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/Te8va/shortURL/internal/app/config"
 	appErrors "github.com/Te8va/shortURL/internal/app/errors"
 )
 
@@ -17,15 +18,16 @@ type JSONRepository struct {
 	file  string
 	store map[string]URLData
 	mu    sync.RWMutex
+	cfg   *config.Config
 }
 
 type URLData struct {
-	UserID     int    `json:"user_id"`
+	UserID      int    `json:"user_id"`
 	OriginalURL string `json:"original_url"`
 	ShortURL    string `json:"short_url"`
 }
 
-func NewJSONRepository(filePath string) (*JSONRepository, error) {
+func NewJSONRepository(filePath string, cfg *config.Config) (*JSONRepository, error) {
 	if filePath == "" {
 		return nil, fmt.Errorf("путь к файлу не задан")
 	}
@@ -33,6 +35,7 @@ func NewJSONRepository(filePath string) (*JSONRepository, error) {
 	repo := &JSONRepository{
 		file:  filePath,
 		store: make(map[string]URLData),
+		cfg:   cfg,
 	}
 
 	if err := repo.loadFromFile(); err != nil {
@@ -44,6 +47,7 @@ func NewJSONRepository(filePath string) (*JSONRepository, error) {
 
 func (r *JSONRepository) Save(ctx context.Context, userID int, url string) (string, error) {
 	id := r.generateID()
+	shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
 
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -54,24 +58,25 @@ func (r *JSONRepository) Save(ctx context.Context, userID int, url string) (stri
 		}
 	}
 
-	r.store[id] = URLData{
-		UserID:     userID,
+	r.store[shortenedURL] = URLData{
+		UserID:      userID,
 		OriginalURL: url,
-		ShortURL:    id,
+		ShortURL:    shortenedURL,
 	}
 
 	if err := r.saveToFile(); err != nil {
 		return "", fmt.Errorf("ошибка сохранения в файл: %w", err)
 	}
 
-	return id, nil
+	return shortenedURL, nil
 }
 
 func (r *JSONRepository) Get(ctx context.Context, id string) (string, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	url, exists := r.store[id]
+	shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
+	url, exists := r.store[shortenedURL]
 	return url.OriginalURL, exists
 }
 
@@ -83,12 +88,13 @@ func (r *JSONRepository) SaveBatch(ctx context.Context, userID int, urls map[str
 
 	for correlationID, originalURL := range urls {
 		id := r.generateID()
-		r.store[id] = URLData{
-			UserID:     userID,
+		shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
+		r.store[shortenedURL ] = URLData{
+			UserID:      userID,
 			OriginalURL: originalURL,
-			ShortURL:    id,
+			ShortURL:    shortenedURL ,
 		}
-		result[correlationID] = id
+		result[correlationID] = shortenedURL 
 	}
 
 	if err := r.saveToFile(); err != nil {

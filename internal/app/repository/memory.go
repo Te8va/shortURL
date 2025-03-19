@@ -2,29 +2,36 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"math/rand"
+
+	"github.com/Te8va/shortURL/internal/app/config"
 )
 
 type MemoryRepository struct {
 	store map[string]string
+	cfg   *config.Config
 }
 
-func NewMemoryRepository() *MemoryRepository {
+func NewMemoryRepository(cfg *config.Config) *MemoryRepository {
 	return &MemoryRepository{
 		store: make(map[string]string),
+		cfg:   cfg,
 	}
 }
 
 func (r *MemoryRepository) Save(ctx context.Context, userID int, url string) (string, error) {
 	id := r.generateID()
-	r.store[id] = url
+	shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
+	r.store[shortenedURL] = url
 
-	return id, nil
+	return shortenedURL, nil
 }
 
 func (r *MemoryRepository) Get(ctx context.Context, id string) (string, bool) {
 
-	url, exists := r.store[id]
+	shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
+	url, exists := r.store[shortenedURL]
 	return url, exists
 }
 
@@ -32,7 +39,9 @@ func (r *MemoryRepository) SaveBatch(ctx context.Context, userID int, urls map[s
 	result := make(map[string]string)
 	for correlationID, originalURL := range urls {
 		id := r.generateID()
-		r.store[id] = originalURL
+		shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
+
+		r.store[shortenedURL] = originalURL
 		result[correlationID] = id
 	}
 
