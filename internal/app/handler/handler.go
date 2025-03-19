@@ -68,7 +68,7 @@ func (u *URLHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, _ := r.Context().Value("userID").(int)
+	userID, _ := r.Context().Value(domain.UserIDKey).(int)
 
 	originalURLBytes, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -97,19 +97,17 @@ func (u *URLHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to save URL", http.StatusBadRequest)
 			return
 		}
-		shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
 		w.Header().Set(ContentType, ContentTypeText)
 		w.WriteHeader(http.StatusConflict)
-		if _, err := w.Write([]byte(shortenedURL)); err != nil {
+		if _, err := w.Write([]byte(id)); err != nil {
 			http.Error(w, "Failed to write response", http.StatusInternalServerError)
 		}
 		return
 	}
 
-	shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
 	w.Header().Set(ContentType, ContentTypeText)
 	w.WriteHeader(http.StatusCreated)
-	if _, err := w.Write([]byte(shortenedURL)); err != nil {
+	if _, err := w.Write([]byte(id)); err != nil {
 		http.Error(w, "Failed to write response", http.StatusBadRequest)
 		return
 	}
@@ -138,7 +136,7 @@ func (u *URLHandler) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, _ := r.Context().Value("userID").(int)
+	userID, _ := r.Context().Value(domain.UserIDKey).(int)
 
 	var req domain.ShortenRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -152,10 +150,9 @@ func (u *URLHandler) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, err := u.saver.Save(r.Context(), userID, req.URL)
-	shortenedURL := fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
 
 	if errors.Is(err, appErrors.ErrURLExists) {
-		resp := domain.ShortenResponse{Result: shortenedURL}
+		resp := domain.ShortenResponse{Result: id}
 		w.Header().Set(ContentType, ContentTypeApp)
 		w.WriteHeader(http.StatusConflict)
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
@@ -168,7 +165,7 @@ func (u *URLHandler) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := domain.ShortenResponse{Result: shortenedURL}
+	resp := domain.ShortenResponse{Result: id}
 
 	w.Header().Set(ContentType, ContentTypeApp)
 	w.WriteHeader(http.StatusCreated)
@@ -189,7 +186,7 @@ type BatchResponse struct {
 }
 
 func (u *URLHandler) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
-	userID, _ := r.Context().Value("userID").(int)
+	userID, _ := r.Context().Value(domain.UserIDKey).(int)
 
 	var batchReq []BatchRequest
 	if err := json.NewDecoder(r.Body).Decode(&batchReq); err != nil {
@@ -228,7 +225,7 @@ func (u *URLHandler) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *URLHandler) GetUserURLsHandler(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("userID").(int)
+	userID, ok := r.Context().Value(domain.UserIDKey).(int)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return

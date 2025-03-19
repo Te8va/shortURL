@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"net/http"
 
+	"github.com/Te8va/shortURL/internal/app/domain"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -66,15 +67,8 @@ func AuthMiddleware(secretKey string) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			userID, valid := GetUserIDFromCookie(r, secretKey)
 
-			if r.URL.Path == "/api/user/urls" {
-				userID, valid := GetUserIDFromCookie(r, secretKey)
-				if !valid {
-					http.Error(w, "Unauthorized", http.StatusUnauthorized)
-					return
-				}
-
-				ctx := context.WithValue(r.Context(), "userID", userID)
-				next.ServeHTTP(w, r.WithContext(ctx))
+			if !valid && r.Method == "GET" && r.URL.Path == "/api/user/urls" {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
 
@@ -94,7 +88,7 @@ func AuthMiddleware(secretKey string) func(http.Handler) http.Handler {
 				userID = newUserID
 			}
 
-			ctx := context.WithValue(r.Context(), "userID", userID)
+			ctx := context.WithValue(r.Context(), domain.UserIDKey, userID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

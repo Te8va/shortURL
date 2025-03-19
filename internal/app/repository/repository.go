@@ -5,16 +5,24 @@ import (
 	"fmt"
 	"math/rand"
 
+	"github.com/Te8va/shortURL/internal/app/config"
 	appErrors "github.com/Te8va/shortURL/internal/app/errors"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type URLRepository struct {
-	db *pgxpool.Pool
+	db  *pgxpool.Pool
+	cfg *config.Config
 }
 
-func NewURLRepository(db *pgxpool.Pool) (*URLRepository, error) {
-	return &URLRepository{db: db}, nil
+func NewURLRepository(db *pgxpool.Pool, cfg *config.Config) (*URLRepository, error) {
+	if db == nil {
+		return nil, fmt.Errorf("database connection is nil")
+	}
+	if cfg == nil {
+		return nil, fmt.Errorf("config is nil")
+	}
+	return &URLRepository{db: db, cfg: cfg}, nil
 }
 
 func (r *URLRepository) PingPg(ctx context.Context) error {
@@ -28,6 +36,7 @@ func (r *URLRepository) PingPg(ctx context.Context) error {
 
 func (r *URLRepository) Save(ctx context.Context, userID int, url string) (string, error) {
 	id := r.generateID()
+	shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
 
 	query := `WITH ins AS (
 				INSERT INTO urlshrt (short, original, user_id) 
@@ -40,13 +49,13 @@ func (r *URLRepository) Save(ctx context.Context, userID int, url string) (strin
 			  SELECT short FROM urlshrt WHERE original = $2 LIMIT 1;`
 
 	var existingShort string
-	err := r.db.QueryRow(ctx, query, id, url, userID).Scan(&existingShort)
+	err := r.db.QueryRow(ctx, query, shortenedURL, url, userID).Scan(&existingShort)
 
 	if err != nil {
 		return "", fmt.Errorf("ошибка при сохранении или получении short URL: %w", err)
 	}
 
-	if existingShort != id {
+	if existingShort != shortenedURL {
 		return existingShort, appErrors.ErrURLExists
 	}
 

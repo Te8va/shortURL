@@ -76,7 +76,7 @@ func (a *App) initStorage() error {
 			a.logger.Fatalw("Failed to create Postgres connection pool", "error", err)
 		}
 
-		repo, err := repository.NewURLRepository(pool)
+		repo, err := repository.NewURLRepository(pool, a.cfg)
 		if err != nil {
 			a.logger.Fatalw("Failed to initialize Postgres repository", "error", err)
 		}
