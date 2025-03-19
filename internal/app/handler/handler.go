@@ -117,9 +117,11 @@ func (u *URLHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 func (u *URLHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/")
 	if id == "" {
-		http.Error(w, "Missing or invalid ID in the URL path", http.StatusBadRequest)
+		http.Error(w, "Missing or invalid ID", http.StatusBadRequest)
 		return
 	}
+
+	id = fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
 
 	originalURL, exists := u.getter.Get(r.Context(), id)
 	if !exists {

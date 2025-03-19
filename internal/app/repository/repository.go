@@ -63,12 +63,10 @@ func (r *URLRepository) Save(ctx context.Context, userID int, url string) (strin
 }
 
 func (r *URLRepository) Get(ctx context.Context, id string) (string, bool) {
-	shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
-
 	query := `SELECT original FROM urlshrt WHERE short = $1;`
 
 	var url string
-	err := r.db.QueryRow(ctx, query, shortenedURL).Scan(&url)
+	err := r.db.QueryRow(ctx, query, id).Scan(&url)
 	if err == nil {
 		return url, true
 	}
