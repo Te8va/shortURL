@@ -46,7 +46,7 @@ func TestPostHandler(t *testing.T) {
 			name:        "valid URL",
 			contentType: "text/plain",
 			body:        "http://example.com",
-			mockReturn:  "shortID",
+			mockReturn:  "http://localhost:8080/shortID",
 			wantCode:    http.StatusCreated,
 		},
 		{
@@ -145,7 +145,7 @@ func TestPostHandlerJSON(t *testing.T) {
 			name:        "valid JSON",
 			contentType: "application/json",
 			body:        domain.ShortenRequest{URL: "http://example.com"},
-			mockReturn:  "shortID",
+			mockReturn:  "http://localhost:8080/shortID",
 			mockErr:     nil,
 			wantCode:    http.StatusCreated,
 		},
