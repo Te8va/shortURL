@@ -75,8 +75,7 @@ func (r *JSONRepository) Get(ctx context.Context, id string) (string, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
-	url, exists := r.store[shortenedURL]
+	url, exists := r.store[id]
 	return url.OriginalURL, exists
 }
 
@@ -89,12 +88,12 @@ func (r *JSONRepository) SaveBatch(ctx context.Context, userID int, urls map[str
 	for correlationID, originalURL := range urls {
 		id := r.generateID()
 		shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
-		r.store[shortenedURL ] = URLData{
+		r.store[shortenedURL] = URLData{
 			UserID:      userID,
 			OriginalURL: originalURL,
-			ShortURL:    shortenedURL ,
+			ShortURL:    shortenedURL,
 		}
-		result[correlationID] = shortenedURL 
+		result[correlationID] = shortenedURL
 	}
 
 	if err := r.saveToFile(); err != nil {

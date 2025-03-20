@@ -30,8 +30,7 @@ func (r *MemoryRepository) Save(ctx context.Context, userID int, url string) (st
 
 func (r *MemoryRepository) Get(ctx context.Context, id string) (string, bool) {
 
-	shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
-	url, exists := r.store[shortenedURL]
+	url, exists := r.store[id]
 	return url, exists
 }
 
