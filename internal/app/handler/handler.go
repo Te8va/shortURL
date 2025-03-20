@@ -210,7 +210,7 @@ func (u *URLHandler) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Ошибка сохранения URL", http.StatusInternalServerError)
 			return
 		}
-		urlMap[req.CorrelationID] = fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
+		urlMap[req.CorrelationID] = id
 	}
 
 	var batchResp []BatchResponse
