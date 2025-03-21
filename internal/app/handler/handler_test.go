@@ -3,6 +3,7 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -46,7 +47,7 @@ func TestPostHandler(t *testing.T) {
 			name:        "valid URL",
 			contentType: "text/plain",
 			body:        "http://example.com",
-			mockReturn:  "shortID",
+			mockReturn:  "http://localhost:8080/shortID",
 			wantCode:    http.StatusCreated,
 		},
 		{
@@ -66,7 +67,7 @@ func TestPostHandler(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			if testCase.wantCode == http.StatusCreated {
-				mockSaver.EXPECT().Save(gomock.Any(), testCase.body).Return(testCase.mockReturn, nil).Times(1)
+				mockSaver.EXPECT().Save(gomock.Any(), gomock.Any(), testCase.body).Return(testCase.mockReturn, nil).Times(1)
 			}
 
 			req, err := http.NewRequest(http.MethodPost, "/", bytes.NewBufferString(testCase.body))
@@ -88,11 +89,13 @@ func TestGetHandler(t *testing.T) {
 	ctrl, _, mockGetter, _, handler := setupTestHandler(t)
 	defer ctrl.Finish()
 
+	baseURL := "http://localhost:8080"
 	testID := "testID"
+	fullURL := fmt.Sprintf("%s/%s", baseURL, testID)
 	testURL := "http://example.com"
 
-	mockGetter.EXPECT().Get(gomock.Any(), testID).Return(testURL, true).AnyTimes()
-	mockGetter.EXPECT().Get(gomock.Any(), "invalidID").Return("", false).AnyTimes()
+	mockGetter.EXPECT().Get(gomock.Any(), fullURL).Return(testURL, true).AnyTimes()
+	mockGetter.EXPECT().Get(gomock.Any(), fmt.Sprintf("%s/%s", baseURL, "invalidID")).Return("", false).AnyTimes()
 
 	testCases := []struct {
 		name      string
@@ -145,7 +148,7 @@ func TestPostHandlerJSON(t *testing.T) {
 			name:        "valid JSON",
 			contentType: "application/json",
 			body:        domain.ShortenRequest{URL: "http://example.com"},
-			mockReturn:  "shortID",
+			mockReturn:  "http://localhost:8080/shortID",
 			mockErr:     nil,
 			wantCode:    http.StatusCreated,
 		},
@@ -168,7 +171,7 @@ func TestPostHandlerJSON(t *testing.T) {
 			bodyBytes, _ := json.Marshal(testCase.body)
 
 			if testCase.wantCode == http.StatusCreated {
-				mockSaver.EXPECT().Save(gomock.Any(), testCase.body.URL).Return(testCase.mockReturn, testCase.mockErr).Times(1)
+				mockSaver.EXPECT().Save(gomock.Any(), gomock.Any(), testCase.body.URL).Return(testCase.mockReturn, testCase.mockErr).Times(1)
 			}
 
 			req, err := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer(bodyBytes))

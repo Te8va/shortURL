@@ -4,7 +4,9 @@ go 1.22.1
 
 require (
 	github.com/caarlos0/env/v6 v6.10.1
+	github.com/go-chi/chi v1.5.5
 	github.com/go-chi/chi/v5 v5.2.0
+	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/golang-migrate/migrate/v4 v4.18.2
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgx/v5 v5.7.2
