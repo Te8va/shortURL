@@ -142,7 +142,7 @@ func (a *App) Run() error {
 
 	a.logger.Infoln("Shutting down server...")
 
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer shutdownCancel()
 
 	if err := a.server.Shutdown(shutdownCtx); err != nil {
