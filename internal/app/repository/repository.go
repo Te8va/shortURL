@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"log"
 	"math/rand"
 	"sync"
 
@@ -173,7 +174,7 @@ func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []st
 		return nil
 	}
 
-	const workerCount = 2
+	const workerCount = 4
 	const batchSize = 50
 
 	inputCh := make(chan []string)
@@ -233,6 +234,7 @@ func (r *URLRepository) DeleteUserURL(ctx context.Context, userID int, ids []str
 
 	_, err := r.db.Exec(ctx, query, userID, pq.Array(ids))
 	if err != nil {
+		log.Printf("Ошибка удаления URL (user_id=%d): %v", userID, err)
 		return fmt.Errorf("ошибка при удалении URL: %w", err)
 	}
 	return nil
