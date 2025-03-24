@@ -180,6 +180,7 @@ func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []st
 	inputCh := make(chan []string)
 	errCh := make(chan error, workerCount)
 
+	
 	var wg sync.WaitGroup
 	for i := 0; i < workerCount; i++ {
 		wg.Add(1)
@@ -188,10 +189,15 @@ func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []st
 			for batch := range inputCh {
 				select {
 				case <-ctx.Done():
+					log.Println("Удаление прервано из-за отмены контекста.")
 					return
 				default:
 					if err := r.DeleteUserURL(ctx, userID, batch); err != nil {
-						errCh <- err
+						select {
+						case errCh <- err:
+						default:
+							log.Println("Пропущена ошибка удаления (канал errCh переполнен)")
+						}
 					}
 				}
 			}
@@ -208,6 +214,7 @@ func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []st
 
 			select {
 			case <-ctx.Done():
+				log.Println("Удаление прервано перед отправкой всех пакетов")
 				return
 			case inputCh <- ids[i:end]:
 			}
