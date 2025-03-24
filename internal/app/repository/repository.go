@@ -173,16 +173,18 @@ func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []st
 	}
 
 	const workerCount = 4
-	inputCh := make(chan string)
+	const batchSize = 10
+
+	inputCh := make(chan []string)
 	errCh := make(chan error)
 
 	var wg sync.WaitGroup
-	for i:= 0; i < workerCount; i++ {
+	for i := 0; i < workerCount; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for id := range inputCh {
-				if err := r.DeleteUserURL(ctx, userID, id); err != nil {
+			for batch := range inputCh {
+				if err := r.DeleteUserURL(ctx, userID, batch); err != nil {
 					errCh <- err
 				}
 			}
@@ -191,8 +193,12 @@ func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []st
 
 	go func() {
 		defer close(inputCh)
-		for _, id := range ids {
-			inputCh <- id
+		for i := 0; i < len(ids); i += batchSize {
+			end := i + batchSize
+			if end > len(ids) {
+				end = len(ids)
+			}
+			inputCh <- ids[i:end]
 		}
 	}()
 
@@ -211,10 +217,11 @@ func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []st
 	return finalErr
 }
 
-func (r *URLRepository) DeleteUserURL(ctx context.Context, userID int, id string) error {
-	query := `UPDATE urlshrt SET is_deleted = true WHERE user_id = $1 AND short = $2;`
 
-	_, err := r.db.Exec(ctx, query, userID, id)
+func (r *URLRepository) DeleteUserURL(ctx context.Context, userID int, ids []string) error {
+	query := `UPDATE urlshrt SET is_deleted = true WHERE user_id = $1 AND short = ANY($2);`
+
+	_, err := r.db.Exec(ctx, query, userID, ids)
 	if err != nil {
 		return fmt.Errorf("ошибка при удалении URL: %w", err)
 	}
