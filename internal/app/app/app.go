@@ -18,12 +18,13 @@ import (
 )
 
 type App struct {
-	cfg    *config.Config
-	logger *zap.SugaredLogger
-	saver  service.URLSaver
-	getter service.URLGetter
-	pinger service.Pinger
-	server *http.Server
+	cfg     *config.Config
+	logger  *zap.SugaredLogger
+	saver   service.URLSaver
+	getter  service.URLGetter
+	pinger  service.Pinger
+	deleter service.URLDelete
+	server  *http.Server
 }
 
 func NewApp() (*App, error) {
@@ -84,6 +85,7 @@ func (a *App) initStorage() error {
 		a.saver = repo
 		a.getter = repo
 		a.pinger = repo
+		a.deleter = repo
 
 	} else if a.cfg.FileStoragePath != "" {
 		a.logger.Infoln("Using JSON file as storage:", a.cfg.FileStoragePath)
@@ -96,6 +98,7 @@ func (a *App) initStorage() error {
 		a.saver = storage
 		a.getter = storage
 		a.pinger = nil
+		a.deleter = nil
 
 	} else {
 		a.logger.Infoln("Using in-memory storage")
@@ -104,12 +107,13 @@ func (a *App) initStorage() error {
 		a.saver = storage
 		a.getter = storage
 		a.pinger = nil
+		a.deleter = nil
 	}
 	return nil
 }
 
 func (a *App) initServer() {
-	handler := router.NewRouter(a.cfg, a.saver, a.getter, a.pinger)
+	handler := router.NewRouter(a.cfg, a.saver, a.getter, a.pinger, a.deleter)
 
 	a.server = &http.Server{
 		Addr:    a.cfg.ServerAddress,

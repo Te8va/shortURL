@@ -30,8 +30,12 @@ type URLSaver interface {
 }
 
 type URLGetter interface {
-	Get(ctx context.Context, id string) (string, bool)
+	Get(ctx context.Context, id string) (string, error)
 	GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error)
+}
+
+type URLDelete interface {
+	DeleteUserURLs(ctx context.Context, userID int, ids []string) error
 }
 
 type Pinger interface {
@@ -39,18 +43,20 @@ type Pinger interface {
 }
 
 type URLHandler struct {
-	saver  URLSaver
-	getter URLGetter
-	pinger Pinger
-	cfg    *config.Config
+	saver   URLSaver
+	getter  URLGetter
+	pinger  Pinger
+	deleter URLDelete
+	cfg     *config.Config
 }
 
-func NewURLHandler(cfg *config.Config, saver URLSaver, getter URLGetter, pinger Pinger) *URLHandler {
+func NewURLHandler(cfg *config.Config, saver URLSaver, getter URLGetter, pinger Pinger, deleter URLDelete) *URLHandler {
 	return &URLHandler{
-		saver:  saver,
-		getter: getter,
-		pinger: pinger,
-		cfg:    cfg,
+		saver:   saver,
+		getter:  getter,
+		pinger:  pinger,
+		deleter: deleter,
+		cfg:     cfg,
 	}
 }
 
@@ -123,9 +129,17 @@ func (u *URLHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 
 	id = fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
 
-	originalURL, exists := u.getter.Get(r.Context(), id)
-	if !exists {
-		http.Error(w, "URL not found", http.StatusBadRequest)
+	originalURL, err := u.getter.Get(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, appErrors.ErrDeleted) {
+			http.Error(w, "URL has been deleted", http.StatusGone)
+			return
+		}
+		if errors.Is(err, appErrors.ErrNotFound) {
+			http.Error(w, "URL not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
@@ -249,4 +263,27 @@ func (u *URLHandler) GetUserURLsHandler(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(urls)
+}
+
+func (u *URLHandler) DeleteUserURLsHandler(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(domain.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var ids []string
+	if err := json.NewDecoder(r.Body).Decode(&ids); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	if len(ids) == 0 {
+		http.Error(w, "Empty list of URLs", http.StatusBadRequest)
+		return
+	}
+
+	go u.deleter.DeleteUserURLs(r.Context(), userID, ids)
+
+	w.WriteHeader(http.StatusAccepted)
 }

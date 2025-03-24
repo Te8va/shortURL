@@ -67,11 +67,6 @@ func AuthMiddleware(secretKey string) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			userID, valid := GetUserIDFromCookie(r, secretKey)
 
-			// if !valid && r.Method == "GET" && r.URL.Path == "/api/user/urls" {
-			// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			// 	return
-			// }
-
 			if !valid {
 				tokenString, newUserID, err := GenerateToken(secretKey)
 				if err != nil {

@@ -35,11 +35,11 @@ func (m *MockURLGetter) EXPECT() *MockURLGetterMockRecorder {
 }
 
 // Get mocks base method.
-func (m *MockURLGetter) Get(arg0 context.Context, arg1 string) (string, bool) {
+func (m *MockURLGetter) Get(arg0 context.Context, arg1 string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0, arg1)
 	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(bool)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 

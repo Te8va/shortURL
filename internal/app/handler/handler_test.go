@@ -10,30 +10,32 @@ import (
 
 	"github.com/Te8va/shortURL/internal/app/config"
 	"github.com/Te8va/shortURL/internal/app/domain"
+	appErrors "github.com/Te8va/shortURL/internal/app/errors"
 	"github.com/Te8va/shortURL/internal/app/service/mocks"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTestHandler(t *testing.T) (*gomock.Controller, *mocks.MockURLSaver, *mocks.MockURLGetter, *mocks.MockPinger, *URLHandler) {
+func setupTestHandler(t *testing.T) (*gomock.Controller, *mocks.MockURLSaver, *mocks.MockURLGetter, *mocks.MockPinger, *mocks.MockURLDelete, *URLHandler) {
 	ctrl := gomock.NewController(t)
 
 	mockSaver := mocks.NewMockURLSaver(ctrl)
 	mockGetter := mocks.NewMockURLGetter(ctrl)
 	mockPinger := mocks.NewMockPinger(ctrl)
+	mockDeleter := mocks.NewMockURLDelete(ctrl)
 
 	testCfg := &config.Config{
 		BaseURL:       "http://localhost:8080",
 		ServerAddress: "localhost:8080",
 	}
 
-	handler := NewURLHandler(testCfg, mockSaver, mockGetter, mockPinger)
-	return ctrl, mockSaver, mockGetter, mockPinger, handler
+	handler := NewURLHandler(testCfg, mockSaver, mockGetter, mockPinger, mockDeleter)
+	return ctrl, mockSaver, mockGetter, mockPinger, mockDeleter, handler
 }
 
 func TestPostHandler(t *testing.T) {
-	ctrl, mockSaver, _, _, handler := setupTestHandler(t)
+	ctrl, mockSaver, _, _, _, handler := setupTestHandler(t)
 	defer ctrl.Finish()
 
 	testCases := []struct {
@@ -86,7 +88,7 @@ func TestPostHandler(t *testing.T) {
 }
 
 func TestGetHandler(t *testing.T) {
-	ctrl, _, mockGetter, _, handler := setupTestHandler(t)
+	ctrl, _, mockGetter, _, _, handler := setupTestHandler(t)
 	defer ctrl.Finish()
 
 	baseURL := "http://localhost:8080"
@@ -94,8 +96,8 @@ func TestGetHandler(t *testing.T) {
 	fullURL := fmt.Sprintf("%s/%s", baseURL, testID)
 	testURL := "http://example.com"
 
-	mockGetter.EXPECT().Get(gomock.Any(), fullURL).Return(testURL, true).AnyTimes()
-	mockGetter.EXPECT().Get(gomock.Any(), fmt.Sprintf("%s/%s", baseURL, "invalidID")).Return("", false).AnyTimes()
+	mockGetter.EXPECT().Get(gomock.Any(), fullURL).Return(testURL, nil).AnyTimes()
+	mockGetter.EXPECT().Get(gomock.Any(), fmt.Sprintf("%s/%s", baseURL, "invalidID")).Return("", appErrors.ErrNotFound).AnyTimes()
 
 	testCases := []struct {
 		name      string
@@ -112,7 +114,7 @@ func TestGetHandler(t *testing.T) {
 		{
 			name:      "invalid ID",
 			requestID: "invalidID",
-			wantCode:  http.StatusBadRequest,
+			wantCode:  http.StatusNotFound,
 		},
 	}
 
@@ -133,7 +135,7 @@ func TestGetHandler(t *testing.T) {
 }
 
 func TestPostHandlerJSON(t *testing.T) {
-	ctrl, mockSaver, _, _, handler := setupTestHandler(t)
+	ctrl, mockSaver, _, _, _, handler := setupTestHandler(t)
 	defer ctrl.Finish()
 
 	testCases := []struct {
@@ -190,7 +192,7 @@ func TestPostHandlerJSON(t *testing.T) {
 }
 
 func TestPingHandler(t *testing.T) {
-	ctrl, _, _, mockPinger, handler := setupTestHandler(t)
+	ctrl, _, _, mockPinger, _, handler := setupTestHandler(t)
 	defer ctrl.Finish()
 
 	mockPinger.EXPECT().PingPg(gomock.Any()).Return(nil).Times(1)

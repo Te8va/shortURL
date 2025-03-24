@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"sync"
 
 	"github.com/Te8va/shortURL/internal/app/config"
 	appErrors "github.com/Te8va/shortURL/internal/app/errors"
+	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -62,16 +64,25 @@ func (r *URLRepository) Save(ctx context.Context, userID int, url string) (strin
 	return existingShort, nil
 }
 
-func (r *URLRepository) Get(ctx context.Context, id string) (string, bool) {
-	query := `SELECT original FROM urlshrt WHERE short = $1;`
+func (r *URLRepository) Get(ctx context.Context, id string) (string, error) {
+	query := `SELECT original, is_deleted FROM urlshrt WHERE short = $1;`
 
 	var url string
-	err := r.db.QueryRow(ctx, query, id).Scan(&url)
-	if err == nil {
-		return url, true
+	var isDeleted bool
+
+	err := r.db.QueryRow(ctx, query, id).Scan(&url, &isDeleted)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return "", appErrors.ErrNotFound
+		}
+		return "", fmt.Errorf("ошибка запроса в БД: %w", err)
 	}
 
-	return "", false
+	if isDeleted {
+		return "", appErrors.ErrDeleted
+	}
+
+	return url, nil
 }
 
 func (r *URLRepository) SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error) {
@@ -154,4 +165,58 @@ func (r *URLRepository) GetUserURLs(ctx context.Context, userID int) ([]map[stri
 	}
 
 	return urls, nil
+}
+
+func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []string) error {
+	if len(ids) == 0 {
+		return nil
+	}
+
+	const workerCount = 4
+	inputCh := make(chan string)
+	errCh := make(chan error)
+
+	var wg sync.WaitGroup
+	for i:= 0; i < workerCount; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for id := range inputCh {
+				if err := r.DeleteUserURL(ctx, userID, id); err != nil {
+					errCh <- err
+				}
+			}
+		}()
+	}
+
+	go func() {
+		defer close(inputCh)
+		for _, id := range ids {
+			inputCh <- id
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(errCh)
+	}()
+
+	var finalErr error
+	for err := range errCh {
+		if finalErr == nil {
+			finalErr = err
+		}
+	}
+
+	return finalErr
+}
+
+func (r *URLRepository) DeleteUserURL(ctx context.Context, userID int, id string) error {
+	query := `UPDATE urlshrt SET is_deleted = true WHERE user_id = $1 AND short = $2;`
+
+	_, err := r.db.Exec(ctx, query, userID, id)
+	if err != nil {
+		return fmt.Errorf("ошибка при удалении URL: %w", err)
+	}
+	return nil
 }
