@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS urlshrt (
     id SERIAL PRIMARY KEY,
     short VARCHAR(255) UNIQUE NOT NULL,
     original TEXT UNIQUE NOT NULL,
-    user_id INTEGER NOT NULL;
+    user_id INTEGER NOT NULL,
     is_deleted BOOLEAN DEFAULT FALSE
 );
 
