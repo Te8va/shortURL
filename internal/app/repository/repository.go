@@ -173,7 +173,7 @@ func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []st
 	}
 
 	const workerCount = 4
-	const batchSize = 50
+	const batchSize = 100
 
 	inputCh := make(chan []string)
 	errCh := make(chan error)
