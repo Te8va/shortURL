@@ -283,12 +283,14 @@ func (u *URLHandler) DeleteUserURLsHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err := u.deleter.DeleteUserURLs(r.Context(), userID, ids)
-	if err != nil {
-		log.Printf("Ошибка при удалении URL: %v", err)
-		http.Error(w, "Failed to delete URLs", http.StatusInternalServerError)
-		return
-	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	go func() {
+		if err := u.deleter.DeleteUserURLs(ctx, userID, ids); err != nil {
+			log.Printf("Ошибка при удалении URL: %v", err)
+		}
+	}()
 
 	w.WriteHeader(http.StatusAccepted)
 }
