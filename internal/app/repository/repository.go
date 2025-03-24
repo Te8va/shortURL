@@ -176,7 +176,7 @@ func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []st
 	const batchSize = 100
 
 	inputCh := make(chan []string)
-	errCh := make(chan error)
+	errCh := make(chan error, workerCount)
 
 	var wg sync.WaitGroup
 	for i := 0; i < workerCount; i++ {
@@ -185,7 +185,10 @@ func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []st
 			defer wg.Done()
 			for batch := range inputCh {
 				if err := r.DeleteUserURL(ctx, userID, batch); err != nil {
-					errCh <- err
+					select {
+					case errCh <- err:
+					default:
+					}
 				}
 			}
 		}()
@@ -198,7 +201,12 @@ func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []st
 			if end > len(ids) {
 				end = len(ids)
 			}
-			inputCh <- ids[i:end]
+
+			select {
+			case <-ctx.Done():
+				return
+			case inputCh <- ids[i:end]:
+			}
 		}
 	}()
 
