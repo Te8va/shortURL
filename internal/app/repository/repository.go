@@ -173,7 +173,7 @@ func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []st
 	}
 
 	const workerCount = 4
-	const batchSize = 10
+	const batchSize = 50
 
 	inputCh := make(chan []string)
 	errCh := make(chan error)
@@ -216,7 +216,6 @@ func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []st
 
 	return finalErr
 }
-
 
 func (r *URLRepository) DeleteUserURL(ctx context.Context, userID int, ids []string) error {
 	query := `UPDATE urlshrt SET is_deleted = true WHERE user_id = $1 AND short = ANY($2);`
