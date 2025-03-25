@@ -18,13 +18,13 @@ import (
 )
 
 type App struct {
-	cfg     *config.Config
-	logger  *zap.SugaredLogger
-	saver   service.URLSaver
-	getter  service.URLGetter
-	pinger  service.Pinger
+	cfg    *config.Config
+	logger *zap.SugaredLogger
+	saver  service.URLSaver
+	getter service.URLGetter
+	pinger service.Pinger
 	deleter service.URLDelete
-	server  *http.Server
+	server *http.Server
 }
 
 func NewApp() (*App, error) {
@@ -142,7 +142,7 @@ func (a *App) Run() error {
 
 	a.logger.Infoln("Shutting down server...")
 
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 100*time.Second)
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer shutdownCancel()
 
 	if err := a.server.Shutdown(shutdownCtx); err != nil {

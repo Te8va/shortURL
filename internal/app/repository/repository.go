@@ -187,18 +187,13 @@ func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []st
 		go func() {
 			defer wg.Done()
 			for batch := range inputCh {
-				select {
-				case <-ctx.Done():
+				if ctx.Err() != nil {
 					log.Println("Удаление прервано из-за отмены контекста.")
 					return
-				default:
-					if err := r.DeleteUserURL(ctx, userID, batch); err != nil {
-						select {
-						case errCh <- err:
-						default:
-							log.Println("Пропущена ошибка удаления (канал errCh переполнен)")
-						}
-					}
+				}
+
+				if err := r.DeleteUserURL(ctx, userID, batch); err != nil {
+					errCh <- err
 				}
 			}
 		}()
