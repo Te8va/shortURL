@@ -240,7 +240,7 @@ func (r *URLRepository) GetUserURLs(ctx context.Context, userID int) ([]map[stri
 // 	return nil
 // }
 
-func (r *URLRepository) DeleteUserURLs(ctx context.Context, ids []string) error {
+func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []string) error {
 	if len(ids) == 0 {
 		return nil
 	}
@@ -252,8 +252,8 @@ func (r *URLRepository) DeleteUserURLs(ctx context.Context, ids []string) error 
 	}
 	defer tx.Rollback(ctx)
 
-	query := `UPDATE urlshrt SET is_deleted = true WHERE short = ANY($1)`
-	_, err = tx.Exec(ctx, query, pq.Array(ids))
+	query := `UPDATE urlshrt SET is_deleted = true WHERE short = ANY($1) AND user_id = $2`
+	_, err = tx.Exec(ctx, query, pq.Array(ids), userID)
 	if err != nil {
 		log.Println("Ошибка при удалении URL:", err)
 		return fmt.Errorf("ошибка при удалении URL: %w", err)
