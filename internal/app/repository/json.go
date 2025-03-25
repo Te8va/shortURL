@@ -71,7 +71,7 @@ func (r *JSONRepository) Save(ctx context.Context, userID int, url string) (stri
 	return shortenedURL, nil
 }
 
-func (r *JSONRepository) Get(ctx context.Context, id string) (string, error) {
+func (r *JSONRepository) Get(ctx context.Context, id string, errChan chan error) (string, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 

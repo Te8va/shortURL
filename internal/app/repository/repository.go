@@ -65,7 +65,7 @@ func (r *URLRepository) Save(ctx context.Context, userID int, url string) (strin
 	return existingShort, nil
 }
 
-func (r *URLRepository) Get(ctx context.Context, id string) (string, error) {
+func (r *URLRepository) Get(ctx context.Context, id string, errChan chan error) (string, error) {
 	query := `SELECT original, is_deleted FROM urlshrt WHERE short = $1;`
 
 	var url string
@@ -80,7 +80,8 @@ func (r *URLRepository) Get(ctx context.Context, id string) (string, error) {
 	}
 
 	if isDeleted {
-		return "", appErrors.ErrDeleted
+		errChan <- appErrors.ErrDeleted
+		return "", nil
 	}
 
 	return url, nil

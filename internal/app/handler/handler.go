@@ -30,7 +30,7 @@ type URLSaver interface {
 }
 
 type URLGetter interface {
-	Get(ctx context.Context, id string) (string, error)
+	Get(ctx context.Context, id string, errChan chan error) (string, error)
 	GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error)
 }
 
@@ -129,18 +129,26 @@ func (u *URLHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 
 	id = fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
 
-	originalURL, err := u.getter.Get(r.Context(), id)
-	if err != nil {
-		if errors.Is(err, appErrors.ErrDeleted) {
-			http.Error(w, "URL has been deleted", http.StatusGone)
-			return
-		}
-		if errors.Is(err, appErrors.ErrNotFound) {
-			http.Error(w, "URL not found", http.StatusNotFound)
-			return
-		}
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	errChan := make(chan error, 1)
+	originalURL, err := u.getter.Get(r.Context(), id, errChan)
+	select {
+	case errDeleted := <-errChan:
+		log.Printf("URL %s был удален: %v", id, errDeleted)
+		http.Error(w, "URL has been deleted", http.StatusGone)
 		return
+	default:
+		if err != nil {
+			if errors.Is(err, appErrors.ErrDeleted) {
+				http.Error(w, "URL has been deleted", http.StatusGone)
+				return
+			}
+			if errors.Is(err, appErrors.ErrNotFound) {
+				http.Error(w, "URL not found", http.StatusNotFound)
+				return
+			}
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	log.Printf("Redirecting ID %s to URL: %s", id, originalURL)
@@ -284,7 +292,8 @@ func (u *URLHandler) DeleteUserURLsHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	go func() {
-		if err := u.deleter.DeleteUserURLs(r.Context(), userID, ids); err != nil {
+		err := u.deleter.DeleteUserURLs(r.Context(), userID, ids)
+		if err != nil {
 			log.Printf("Ошибка при удалении URL: %v", err)
 		}
 	}()

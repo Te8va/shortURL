@@ -29,7 +29,7 @@ func (r *MemoryRepository) Save(ctx context.Context, userID int, url string) (st
 	return shortenedURL, nil
 }
 
-func (r *MemoryRepository) Get(ctx context.Context, id string) (string, error) {
+func (r *MemoryRepository) Get(ctx context.Context, id string, errChan chan error) (string, error) {
 
 	url, exists := r.store[id]
 	if !exists {
