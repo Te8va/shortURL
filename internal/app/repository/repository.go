@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"sync"
 
 	"github.com/Te8va/shortURL/internal/app/config"
 	appErrors "github.com/Te8va/shortURL/internal/app/errors"
@@ -169,75 +168,102 @@ func (r *URLRepository) GetUserURLs(ctx context.Context, userID int) ([]map[stri
 	return urls, nil
 }
 
-func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []string) error {
+// func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []string) error {
+// 	if len(ids) == 0 {
+// 		return nil
+// 	}
+
+// 	const workerCount = 150
+// 	const batchSize = 300
+
+// 	inputCh := make(chan []string)
+// 	errCh := make(chan error, workerCount)
+
+// 	var wg sync.WaitGroup
+// 	for i := 0; i < workerCount; i++ {
+// 		wg.Add(1)
+// 		go func() {
+// 			defer wg.Done()
+// 			for batch := range inputCh {
+// 				if ctx.Err() != nil {
+// 					log.Println("Удаление прервано из-за отмены контекста.")
+// 					return
+// 				}
+
+// 				if err := r.DeleteUserURL(ctx, userID, batch); err != nil {
+// 					errCh <- err
+// 				}
+// 			}
+// 		}()
+// 	}
+
+// 	go func() {
+// 		defer close(inputCh)
+// 		for i := 0; i < len(ids); i += batchSize {
+// 			end := i + batchSize
+// 			if end > len(ids) {
+// 				end = len(ids)
+// 			}
+
+// 			select {
+// 			case <-ctx.Done():
+// 				log.Println("Удаление прервано перед отправкой всех пакетов")
+// 				return
+// 			case inputCh <- ids[i:end]:
+// 			}
+// 		}
+// 	}()
+
+// 	go func() {
+// 		wg.Wait()
+// 		close(errCh)
+// 	}()
+
+// 	var finalErr error
+// 	for err := range errCh {
+// 		if finalErr == nil {
+// 			finalErr = err
+// 		}
+// 	}
+
+// 	return finalErr
+// }
+
+// func (r *URLRepository) DeleteUserURL(ctx context.Context, userID int, ids []string) error {
+// 	query := `UPDATE urlshrt SET is_deleted = true WHERE user_id = $1 AND short = ANY($2::text[]);`
+
+// 	_, err := r.db.Exec(ctx, query, userID, pq.Array(ids))
+// 	if err != nil {
+// 		log.Printf("Ошибка удаления URL (user_id=%d): %v", userID, err)
+// 		return fmt.Errorf("ошибка при удалении URL: %w", err)
+// 	}
+// 	return nil
+// }
+
+func (r *URLRepository) DeleteUserURLs(ctx context.Context, ids []string) error {
 	if len(ids) == 0 {
 		return nil
 	}
 
-	const workerCount = 150
-	const batchSize = 300
-
-	inputCh := make(chan []string)
-	errCh := make(chan error, workerCount)
-
-	
-	var wg sync.WaitGroup
-	for i := 0; i < workerCount; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for batch := range inputCh {
-				if ctx.Err() != nil {
-					log.Println("Удаление прервано из-за отмены контекста.")
-					return
-				}
-
-				if err := r.DeleteUserURL(ctx, userID, batch); err != nil {
-					errCh <- err
-				}
-			}
-		}()
-	}
-
-	go func() {
-		defer close(inputCh)
-		for i := 0; i < len(ids); i += batchSize {
-			end := i + batchSize
-			if end > len(ids) {
-				end = len(ids)
-			}
-
-			select {
-			case <-ctx.Done():
-				log.Println("Удаление прервано перед отправкой всех пакетов")
-				return
-			case inputCh <- ids[i:end]:
-			}
-		}
-	}()
-
-	go func() {
-		wg.Wait()
-		close(errCh)
-	}()
-
-	var finalErr error
-	for err := range errCh {
-		if finalErr == nil {
-			finalErr = err
-		}
-	}
-
-	return finalErr
-}
-
-func (r *URLRepository) DeleteUserURL(ctx context.Context, userID int, ids []string) error {
-	query := `UPDATE urlshrt SET is_deleted = true WHERE user_id = $1 AND short = ANY($2::text[]);`
-
-	_, err := r.db.Exec(ctx, query, userID, pq.Array(ids))
+	tx, err := r.db.Begin(ctx)
 	if err != nil {
-		log.Printf("Ошибка удаления URL (user_id=%d): %v", userID, err)
+		log.Println("Ошибка начала транзакции:", err)
+		return fmt.Errorf("не удалось начать транзакцию: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	query := `UPDATE urlshrt SET is_deleted = true WHERE short = ANY($1)`
+	_, err = tx.Exec(ctx, query, pq.Array(ids))
+	if err != nil {
+		log.Println("Ошибка при удалении URL:", err)
 		return fmt.Errorf("ошибка при удалении URL: %w", err)
 	}
+
+	if err = tx.Commit(ctx); err != nil {
+		log.Println("Ошибка при коммите транзакции:", err)
+		return fmt.Errorf("ошибка при коммите транзакции: %w", err)
+	}
+
+	log.Println("Удаление завершено для:", len(ids), "ссылок.")
 	return nil
 }
