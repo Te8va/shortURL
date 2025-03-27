@@ -35,7 +35,7 @@ type URLGetter interface {
 }
 
 type URLDelete interface {
-	DeleteUserURLs(ctx context.Context, userID int, ids []string) error
+	DeleteUserURLs(ctx context.Context, ids []string, userID int) error
 }
 
 type Pinger interface {
@@ -291,12 +291,12 @@ func (u *URLHandler) DeleteUserURLsHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	go func(userID int, ids []string) {
-		err := u.deleter.DeleteUserURLs(context.Background(), userID, ids)
+	go func(ids []string, userID int) {
+		err := u.deleter.DeleteUserURLs(context.Background(), ids, userID)
 		if err != nil {
 			log.Printf("Ошибка при удалении URL: %v", err)
 		}
-	}(userID, ids)
+	}(ids, userID)
 
 	w.WriteHeader(http.StatusAccepted)
 }

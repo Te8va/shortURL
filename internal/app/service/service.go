@@ -18,7 +18,7 @@ type URLGetter interface {
 
 //go:generate mockgen -destination=mocks/url_delete_mock.gen.go -package=mocks . URLDelete
 type URLDelete interface {
-	DeleteUserURLs(ctx context.Context, userID int, ids []string) error
+	DeleteUserURLs(ctx context.Context, ids []string, userID int) error
 }
 
 //go:generate mockgen -destination=mocks/pinger_mock.gen.go -package=mocks . Pinger
@@ -57,6 +57,6 @@ func (s *URLService) GetUserURLs(ctx context.Context, userID int) ([]map[string]
 	return s.getter.GetUserURLs(ctx, userID)
 }
 
-func (s *URLService) DeleteUserURLs(ctx context.Context, userID int, ids []string) error {
-	return s.deleter.DeleteUserURLs(ctx, userID, ids)
+func (s *URLService) DeleteUserURLs(ctx context.Context, ids []string, userID int) error {
+	return s.deleter.DeleteUserURLs(ctx, ids, userID)
 }

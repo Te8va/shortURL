@@ -168,10 +168,10 @@ func (r *URLRepository) GetUserURLs(ctx context.Context, userID int) ([]map[stri
 	return urls, nil
 }
 
-func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []string) error {
-	query := `UPDATE urlshrt SET is_deleted = true WHERE user_id = $1 AND short = ANY($2);`
+func (r *URLRepository) DeleteUserURLs(ctx context.Context, ids []string, userID int) error {
+	query := `UPDATE urlshrt SET is_deleted = true WHERE short = ANY($1) AND user_id = $2;`
 
-	_, err := r.db.Exec(ctx, query, userID, ids)
+	_, err := r.db.Exec(ctx, query, ids, userID)
 	if err != nil {
 		log.Printf("Ошибка удаления URL (user_id=%d): %v", userID, err)
 		return fmt.Errorf("ошибка при удалении URL: %w", err)
