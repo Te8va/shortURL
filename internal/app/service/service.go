@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"log"
 )
 
 //go:generate mockgen -destination=mocks/url_saver_mock.gen.go -package=mocks . URLSaver
@@ -59,12 +58,5 @@ func (s *URLService) GetUserURLs(ctx context.Context, userID int) ([]map[string]
 }
 
 func (s *URLService) DeleteUserURLs(ctx context.Context, userID int, ids []string) error {
-	go func() {
-		err := s.deleter.DeleteUserURLs(ctx, userID, ids)
-		if err != nil {
-			log.Printf("Ошибка при удалении URL-ов для пользователя %d: %v", userID, err)
-		}
-	}()
-
-	return nil
+	return s.deleter.DeleteUserURLs(ctx, userID, ids)
 }
