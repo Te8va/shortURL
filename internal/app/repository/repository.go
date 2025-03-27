@@ -37,8 +37,7 @@ func (r *URLRepository) PingPg(ctx context.Context) error {
 }
 
 func (r *URLRepository) Save(ctx context.Context, userID int, url string) (string, error) {
-	id := r.generateID()
-	shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
+	shortenedURL := r.generateID()
 
 	query := `WITH ins AS (
 				INSERT INTO urlshrt (short, original, user_id) 

@@ -127,7 +127,6 @@ func (u *URLHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id = fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
 	originalURL, exists, isDeleted := u.getter.Get(r.Context(), id)
 	if !exists {
 		http.Error(w, "URL not found", http.StatusNotFound)
@@ -139,7 +138,9 @@ func (u *URLHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Redirecting ID %s to URL: %s", id, originalURL)
+	originalURLWithBase := fmt.Sprintf("%s/%s", u.cfg.BaseURL, originalURL)
+
+	log.Printf("Redirecting ID %s to URL: %s", id, originalURLWithBase)
 	w.Header().Set("Location", originalURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
