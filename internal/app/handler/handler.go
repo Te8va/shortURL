@@ -291,12 +291,12 @@ func (u *URLHandler) DeleteUserURLsHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	go func(ids []string, userID int) {
+	go func(userID int, ids []string) {
 		err := u.deleter.DeleteUserURLs(context.Background(), userID, ids)
 		if err != nil {
 			log.Printf("Ошибка при удалении URL: %v", err)
 		}
-	}(ids, userID)
+	}(userID, ids)
 
 	w.WriteHeader(http.StatusAccepted)
 }
