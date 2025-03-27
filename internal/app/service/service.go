@@ -12,7 +12,7 @@ type URLSaver interface {
 
 //go:generate mockgen -destination=mocks/url_getter_mock.gen.go -package=mocks . URLGetter
 type URLGetter interface {
-	Get(ctx context.Context, id string, errChan chan error) (string, error)
+	Get(ctx context.Context, id string) (string, bool, bool)
 	GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error)
 }
 
@@ -45,8 +45,8 @@ func (s *URLService) Save(ctx context.Context, userID int, url string) (string, 
 	return s.saver.Save(ctx, userID, url)
 }
 
-func (s *URLService) Get(ctx context.Context, id string, errChan chan error) (string, error) {
-	return s.getter.Get(ctx, id, errChan)
+func (s *URLService) Get(ctx context.Context, id string) (string, bool, bool) {
+	return s.getter.Get(ctx, id)
 }
 
 func (s *URLService) SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error) {

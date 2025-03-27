@@ -2,7 +2,6 @@ package handler
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/Te8va/shortURL/internal/app/config"
 	"github.com/Te8va/shortURL/internal/app/domain"
-	appErrors "github.com/Te8va/shortURL/internal/app/errors"
 	"github.com/Te8va/shortURL/internal/app/service/mocks"
 
 	"github.com/golang/mock/gomock"
@@ -97,17 +95,9 @@ func TestGetHandler(t *testing.T) {
 	fullURL := fmt.Sprintf("%s/%s", baseURL, testID)
 	testURL := "http://example.com"
 
-	mockGetter.EXPECT().Get(gomock.Any(), fullURL, gomock.Any()).DoAndReturn(func(ctx context.Context, url string, errChan chan error) (string, error) {
-		return testURL, nil
-	}).AnyTimes()
-
-	mockGetter.EXPECT().Get(gomock.Any(), fmt.Sprintf("%s/%s", baseURL, "deletedID"), gomock.Any()).DoAndReturn(func(ctx context.Context, url string, errChan chan error) (string, error) {
-		return "", appErrors.ErrDeleted
-	}).AnyTimes()
-
-	mockGetter.EXPECT().Get(gomock.Any(), fmt.Sprintf("%s/%s", baseURL, "invalidID"), gomock.Any()).DoAndReturn(func(ctx context.Context, url string, errChan chan error) (string, error) {
-		return "", appErrors.ErrNotFound
-	}).AnyTimes()
+	mockGetter.EXPECT().Get(gomock.Any(), fullURL).Return(testURL, true, false).AnyTimes()
+	mockGetter.EXPECT().Get(gomock.Any(), fmt.Sprintf("%s/%s", baseURL, "deletedID")).Return("", true, true).AnyTimes()
+	mockGetter.EXPECT().Get(gomock.Any(), fmt.Sprintf("%s/%s", baseURL, "invalidID")).Return("", false, false).AnyTimes()
 
 	testCases := []struct {
 		name      string

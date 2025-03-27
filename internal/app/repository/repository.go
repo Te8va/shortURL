@@ -64,26 +64,22 @@ func (r *URLRepository) Save(ctx context.Context, userID int, url string) (strin
 	return existingShort, nil
 }
 
-func (r *URLRepository) Get(ctx context.Context, id string, errChan chan error) (string, error) {
+func (r *URLRepository) Get(ctx context.Context, id string) (string, bool, bool) {
 	query := `SELECT original, is_deleted FROM urlshrt WHERE short = $1;`
 
-	var url string
+	var originalURL string
 	var isDeleted bool
 
-	err := r.db.QueryRow(ctx, query, id).Scan(&url, &isDeleted)
+	err := r.db.QueryRow(ctx, query, id).Scan(&originalURL, &isDeleted)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return "", appErrors.ErrNotFound
+			return "", false, false
 		}
-		return "", fmt.Errorf("ошибка запроса в БД: %w", err)
+		log.Printf("Ошибка запроса в БД: %v", err)
+		return "", false, false
 	}
 
-	if isDeleted {
-		errChan <- appErrors.ErrDeleted
-		return "", nil
-	}
-
-	return url, nil
+	return originalURL, true, isDeleted
 }
 
 func (r *URLRepository) SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error) {

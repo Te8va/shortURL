@@ -71,15 +71,15 @@ func (r *JSONRepository) Save(ctx context.Context, userID int, url string) (stri
 	return shortenedURL, nil
 }
 
-func (r *JSONRepository) Get(ctx context.Context, id string, errChan chan error) (string, error) {
+func (r *JSONRepository) Get(ctx context.Context, id string) (string, bool, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	url, exists := r.store[id]
 	if !exists {
-		return "", appErrors.ErrNotFound
+		return "", false, false
 	}
-	return url.OriginalURL, nil
+	return url.OriginalURL, true, false
 }
 
 func (r *JSONRepository) SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error) {

@@ -6,7 +6,6 @@ import (
 	"math/rand"
 
 	"github.com/Te8va/shortURL/internal/app/config"
-	appErrors "github.com/Te8va/shortURL/internal/app/errors"
 )
 
 type MemoryRepository struct {
@@ -29,13 +28,12 @@ func (r *MemoryRepository) Save(ctx context.Context, userID int, url string) (st
 	return shortenedURL, nil
 }
 
-func (r *MemoryRepository) Get(ctx context.Context, id string, errChan chan error) (string, error) {
-
+func (r *MemoryRepository) Get(ctx context.Context, id string) (string, bool, bool) {
 	url, exists := r.store[id]
 	if !exists {
-		return "", appErrors.ErrNotFound
+		return "", false, false
 	}
-	return url, nil
+	return url, true, false
 }
 
 func (r *MemoryRepository) SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error) {
