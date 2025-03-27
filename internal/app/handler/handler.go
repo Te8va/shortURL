@@ -127,6 +127,7 @@ func (u *URLHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	id = fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
 	originalURL, exists, isDeleted := u.getter.Get(r.Context(), id)
 	if !exists {
 		http.Error(w, "URL not found", http.StatusNotFound)
@@ -138,9 +139,7 @@ func (u *URLHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	originalURLWithBase := fmt.Sprintf("%s/%s", u.cfg.BaseURL, originalURL)
-
-	log.Printf("Redirecting ID %s to URL: %s", id, originalURLWithBase)
+	log.Printf("Redirecting ID %s to URL: %s", id, originalURL)
 	w.Header().Set("Location", originalURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
@@ -280,12 +279,17 @@ func (u *URLHandler) DeleteUserURLsHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	go func(ids []string, userID int) {
-		err := u.deleter.DeleteUserURLs(context.Background(), ids, userID)
+	var fullURLs []string
+	for _, id := range ids {
+		fullURLs = append(fullURLs, fmt.Sprintf("%s/%s", u.cfg.BaseURL, id))
+	}
+
+	go func(fullURLs []string, userID int) {
+		err := u.deleter.DeleteUserURLs(context.Background(), fullURLs, userID)
 		if err != nil {
 			log.Printf("Ошибка при удалении URL: %v", err)
 		}
-	}(ids, userID)
+	}(fullURLs, userID)
 
 	w.WriteHeader(http.StatusAccepted)
 }

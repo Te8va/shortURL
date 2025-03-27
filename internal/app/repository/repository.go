@@ -37,7 +37,8 @@ func (r *URLRepository) PingPg(ctx context.Context) error {
 }
 
 func (r *URLRepository) Save(ctx context.Context, userID int, url string) (string, error) {
-	shortenedURL := r.generateID()
+	id := r.generateID()
+	shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
 
 	query := `WITH ins AS (
 				INSERT INTO urlshrt (short, original, user_id) 
@@ -171,7 +172,6 @@ func (r *URLRepository) DeleteUserURLs(ctx context.Context, ids []string, userID
 		log.Printf("Ошибка удаления URL (user_id=%d): %v", userID, err)
 		return fmt.Errorf("ошибка при удалении URL: %w", err)
 	}
-
 	if res.RowsAffected() == 0 {
 		return fmt.Errorf("URL не найдены или не принадлежат пользователю")
 	}
