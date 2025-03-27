@@ -10,7 +10,6 @@ import (
 	appErrors "github.com/Te8va/shortURL/internal/app/errors"
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/lib/pq"
 )
 
 type URLRepository struct {
@@ -170,9 +169,9 @@ func (r *URLRepository) GetUserURLs(ctx context.Context, userID int) ([]map[stri
 }
 
 func (r *URLRepository) DeleteUserURLs(ctx context.Context, userID int, ids []string) error {
-	query := `UPDATE urlshrt SET is_deleted = true WHERE user_id = $1 AND short = ANY($2::text[]);`
+	query := `UPDATE urlshrt SET is_deleted = true WHERE user_id = $1 AND short = ANY($2);`
 
-	_, err := r.db.Exec(ctx, query, userID, pq.Array(ids))
+	_, err := r.db.Exec(ctx, query, userID, ids)
 	if err != nil {
 		log.Printf("Ошибка удаления URL (user_id=%d): %v", userID, err)
 		return fmt.Errorf("ошибка при удалении URL: %w", err)
