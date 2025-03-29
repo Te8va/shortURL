@@ -16,25 +16,27 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupTestHandler(t *testing.T) (*gomock.Controller, *mocks.MockURLSaver, *mocks.MockURLGetter, *mocks.MockPinger, *mocks.MockURLDelete, *URLHandler) {
+func setupTestHandler(t *testing.T) (*gomock.Controller, *mocks.MockURLSaver, *mocks.MockURLGetter, *mocks.MockPinger, *SaveHandler, *GetterHandler, *PingHandler) {
 	ctrl := gomock.NewController(t)
 
 	mockSaver := mocks.NewMockURLSaver(ctrl)
 	mockGetter := mocks.NewMockURLGetter(ctrl)
 	mockPinger := mocks.NewMockPinger(ctrl)
-	mockDeleter := mocks.NewMockURLDelete(ctrl)
 
 	testCfg := &config.Config{
 		BaseURL:       "http://localhost:8080",
 		ServerAddress: "localhost:8080",
 	}
 
-	handler := NewURLHandler(testCfg, mockSaver, mockGetter, mockPinger, mockDeleter)
-	return ctrl, mockSaver, mockGetter, mockPinger, mockDeleter, handler
+	saveHandler := NewSaveHandler(mockSaver)
+	getterHandler := NewGetterHandler(mockGetter, testCfg)
+	pingHandler := NewPingHandler(mockPinger)
+
+	return ctrl, mockSaver, mockGetter, mockPinger, saveHandler, getterHandler, pingHandler
 }
 
 func TestPostHandler(t *testing.T) {
-	ctrl, mockSaver, _, _, _, handler := setupTestHandler(t)
+	ctrl, mockSaver, _, _, saveHandler, _, _ := setupTestHandler(t)
 	defer ctrl.Finish()
 
 	testCases := []struct {
@@ -76,7 +78,7 @@ func TestPostHandler(t *testing.T) {
 			req.Header.Set("Content-Type", testCase.contentType)
 
 			w := httptest.NewRecorder()
-			handler.PostHandler(w, req)
+			saveHandler.PostHandler(w, req)
 
 			require.Equal(t, testCase.wantCode, w.Code)
 			if testCase.wantCode == http.StatusCreated {
@@ -87,7 +89,7 @@ func TestPostHandler(t *testing.T) {
 }
 
 func TestGetHandler(t *testing.T) {
-	ctrl, _, mockGetter, _, _, handler := setupTestHandler(t)
+	ctrl, _, mockGetter, _, _, getterHandler, _ := setupTestHandler(t)
 	defer ctrl.Finish()
 
 	baseURL := "http://localhost:8080"
@@ -124,7 +126,7 @@ func TestGetHandler(t *testing.T) {
 			require.NoError(t, err)
 
 			w := httptest.NewRecorder()
-			handler.GetHandler(w, req)
+			getterHandler.GetHandler(w, req)
 
 			require.Equal(t, testCase.wantCode, w.Code)
 			if testCase.wantCode == http.StatusTemporaryRedirect {
@@ -135,7 +137,7 @@ func TestGetHandler(t *testing.T) {
 }
 
 func TestPostHandlerJSON(t *testing.T) {
-	ctrl, mockSaver, _, _, _, handler := setupTestHandler(t)
+	ctrl, mockSaver, _, _, saveHandler, _, _ := setupTestHandler(t)
 	defer ctrl.Finish()
 
 	testCases := []struct {
@@ -181,7 +183,7 @@ func TestPostHandlerJSON(t *testing.T) {
 			req.Header.Set("Content-Type", testCase.contentType)
 
 			w := httptest.NewRecorder()
-			handler.PostHandlerJSON(w, req)
+			saveHandler.PostHandlerJSON(w, req)
 
 			require.Equal(t, testCase.wantCode, w.Code)
 			if testCase.wantCode == http.StatusCreated {
@@ -192,7 +194,7 @@ func TestPostHandlerJSON(t *testing.T) {
 }
 
 func TestPingHandler(t *testing.T) {
-	ctrl, _, _, mockPinger, _, handler := setupTestHandler(t)
+	ctrl, _, _, mockPinger, _, _, pingHandler := setupTestHandler(t)
 	defer ctrl.Finish()
 
 	mockPinger.EXPECT().PingPg(gomock.Any()).Return(nil).Times(1)
@@ -201,7 +203,7 @@ func TestPingHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	w := httptest.NewRecorder()
-	handler.PingHandler(w, req)
+	pingHandler.PingHandler(w, req)
 
 	require.Equal(t, http.StatusOK, w.Code)
 }

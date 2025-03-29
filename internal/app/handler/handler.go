@@ -42,25 +42,15 @@ type Pinger interface {
 	PingPg(ctx context.Context) error
 }
 
-type URLHandler struct {
-	saver   URLSaver
-	getter  URLGetter
-	pinger  Pinger
-	deleter URLDelete
-	cfg     *config.Config
+type PingHandler struct {
+	pinger Pinger
 }
 
-func NewURLHandler(cfg *config.Config, saver URLSaver, getter URLGetter, pinger Pinger, deleter URLDelete) *URLHandler {
-	return &URLHandler{
-		saver:   saver,
-		getter:  getter,
-		pinger:  pinger,
-		deleter: deleter,
-		cfg:     cfg,
-	}
+func NewPingHandler(pinger Pinger) *PingHandler {
+	return &PingHandler{pinger: pinger}
 }
 
-func (u *URLHandler) PingHandler(w http.ResponseWriter, r *http.Request) {
+func (u *PingHandler) PingHandler(w http.ResponseWriter, r *http.Request) {
 	err := u.pinger.PingPg(r.Context())
 	if err != nil {
 		http.Error(w, "Database connection failed", http.StatusInternalServerError)
@@ -69,7 +59,15 @@ func (u *URLHandler) PingHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (u *URLHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
+type SaveHandler struct {
+	saver URLSaver
+}
+
+func NewSaveHandler(saver URLSaver) *SaveHandler {
+	return &SaveHandler{saver: saver}
+}
+
+func (u *SaveHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 	if !strings.HasPrefix(r.Header.Get(ContentType), ContentTypeText) {
 		http.Error(w, "Content-Type must be text/plain", http.StatusBadRequest)
 		return
@@ -120,31 +118,7 @@ func (u *URLHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (u *URLHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
-	id := strings.TrimPrefix(r.URL.Path, "/")
-	if id == "" {
-		http.Error(w, "Missing or invalid ID", http.StatusBadRequest)
-		return
-	}
-
-	id = fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
-	originalURL, exists, isDeleted := u.getter.Get(r.Context(), id)
-	if !exists {
-		http.Error(w, "URL not found", http.StatusNotFound)
-		return
-	}
-
-	if isDeleted {
-		http.Error(w, "URL has been deleted", http.StatusGone)
-		return
-	}
-
-	log.Printf("Redirecting ID %s to URL: %s", id, originalURL)
-	w.Header().Set("Location", originalURL)
-	w.WriteHeader(http.StatusTemporaryRedirect)
-}
-
-func (u *URLHandler) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
+func (u *SaveHandler) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
 	if !strings.HasPrefix(r.Header.Get(ContentType), ContentTypeApp) {
 		http.Error(w, "Content-Type must be application/json", http.StatusBadRequest)
 		return
@@ -199,7 +173,7 @@ type BatchResponse struct {
 	ShortURL      string `json:"short_url"`
 }
 
-func (u *URLHandler) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
+func (u *SaveHandler) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
 	userID, _ := r.Context().Value(domain.UserIDKey).(int)
 
 	var batchReq []BatchRequest
@@ -238,7 +212,40 @@ func (u *URLHandler) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (u *URLHandler) GetUserURLsHandler(w http.ResponseWriter, r *http.Request) {
+type GetterHandler struct {
+	getter URLGetter
+	cfg    *config.Config
+}
+
+func NewGetterHandler(getter URLGetter, cfg *config.Config) *GetterHandler {
+	return &GetterHandler{getter: getter, cfg: cfg}
+}
+
+func (u *GetterHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
+	id := strings.TrimPrefix(r.URL.Path, "/")
+	if id == "" {
+		http.Error(w, "Missing or invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	id = fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
+	originalURL, exists, isDeleted := u.getter.Get(r.Context(), id)
+	if !exists {
+		http.Error(w, "URL not found", http.StatusNotFound)
+		return
+	}
+
+	if isDeleted {
+		http.Error(w, "URL has been deleted", http.StatusGone)
+		return
+	}
+
+	log.Printf("Redirecting ID %s to URL: %s", id, originalURL)
+	w.Header().Set("Location", originalURL)
+	w.WriteHeader(http.StatusTemporaryRedirect)
+}
+
+func (u *GetterHandler) GetUserURLsHandler(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(domain.UserIDKey).(int)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -256,12 +263,21 @@ func (u *URLHandler) GetUserURLsHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(ContentType, ContentTypeApp)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(urls)
 }
 
-func (u *URLHandler) DeleteUserURLsHandler(w http.ResponseWriter, r *http.Request) {
+type DeleteHandler struct {
+	deleter URLDelete
+	cfg     *config.Config
+}
+
+func NewDeleteHandler(deleter URLDelete, cfg *config.Config) *DeleteHandler {
+	return &DeleteHandler{deleter: deleter, cfg: cfg}
+}
+
+func (u *DeleteHandler) DeleteUserURLsHandler(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(domain.UserIDKey).(int)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)

@@ -13,8 +13,6 @@ import (
 )
 
 func NewRouter(cfg *config.Config, saver service.URLSaver, getter service.URLGetter, pinger service.Pinger, deleter service.URLDelete) chi.Router {
-	srv := service.NewURLService(saver, getter, pinger, deleter)
-	store := handler.NewURLHandler(cfg, srv, srv, srv, srv)
 	r := chi.NewRouter()
 
 	if err := middleware.Initialize("info"); err != nil {
@@ -23,13 +21,46 @@ func NewRouter(cfg *config.Config, saver service.URLSaver, getter service.URLGet
 
 	r.Use(middleware.AuthMiddleware(cfg.JWTKey))
 	r.Use(middleware.WithLogging)
-	r.Post("/", store.PostHandler)
-	r.Get("/{id}", store.GetHandler)
-	r.Post("/api/shorten", store.PostHandlerJSON)
-	r.Post("/api/shorten/batch", store.PostHandlerBatch)
-	r.Get("/ping", store.PingHandler)
-	r.Get("/api/user/urls", store.GetUserURLsHandler)
-	r.Delete("/api/user/urls", store.DeleteUserURLsHandler)
+
+	r.Mount("/api/urls", newURLRouter(saver, getter, cfg))
+	r.Mount("/ping", newPingRouter(pinger))
+	r.Mount("/api/user", newUserRouter(getter, deleter, cfg))
+
+	return r
+}
+
+func newURLRouter(saver service.URLSaver, getter service.URLGetter, cfg *config.Config) chi.Router {
+	r := chi.NewRouter()
+
+	saveHandler := handler.NewSaveHandler(saver)
+	getHandler := handler.NewGetterHandler(getter, cfg)
+
+	r.Post("/", saveHandler.PostHandler)
+	r.Get("/{id}", getHandler.GetHandler)
+	r.Post("/shorten", saveHandler.PostHandlerJSON)
+	r.Post("/batch", saveHandler.PostHandlerBatch)
+	return r
+}
+
+func newPingRouter(pinger service.Pinger) chi.Router {
+	r := chi.NewRouter()
+
+	if pinger != nil {
+		pingHandler := handler.NewPingHandler(pinger)
+		r.Get("/", pingHandler.PingHandler)
+	}
+
+	return r
+}
+
+func newUserRouter(getter service.URLGetter, deleter service.URLDelete, cfg *config.Config) chi.Router {
+	r := chi.NewRouter()
+
+	getHandler := handler.NewGetterHandler(getter, cfg)
+	deleteHandler := handler.NewDeleteHandler(deleter, cfg)
+
+	r.Get("/urls", getHandler.GetUserURLsHandler)
+	r.Delete("/urls", deleteHandler.DeleteUserURLsHandler)
 
 	return r
 }
