@@ -22,23 +22,42 @@ func NewRouter(cfg *config.Config, saver service.URLSaver, getter service.URLGet
 	r.Use(middleware.AuthMiddleware(cfg.JWTKey))
 	r.Use(middleware.WithLogging)
 
-	r.Mount("/api/urls", newURLRouter(saver, getter, cfg))
+	r.Mount("/", newRootRouter(saver, getter))
+	r.Mount("/api", newAPIRouter(saver, getter, deleter))
 	r.Mount("/ping", newPingRouter(pinger))
-	r.Mount("/api/user", newUserRouter(getter, deleter, cfg))
 
 	return r
 }
 
-func newURLRouter(saver service.URLSaver, getter service.URLGetter, cfg *config.Config) chi.Router {
+func newRootRouter(saver service.URLSaver, getter service.URLGetter) chi.Router {
 	r := chi.NewRouter()
 
 	saveHandler := handler.NewSaveHandler(saver)
-	getHandler := handler.NewGetterHandler(getter, cfg)
+	getHandler := handler.NewGetterHandler(getter, nil)
 
 	r.Post("/", saveHandler.PostHandler)
 	r.Get("/{id}", getHandler.GetHandler)
-	r.Post("/shorten", saveHandler.PostHandlerJSON)
-	r.Post("/batch", saveHandler.PostHandlerBatch)
+
+	return r
+}
+
+func newAPIRouter(saver service.URLSaver, getter service.URLGetter, deleter service.URLDelete) chi.Router {
+	r := chi.NewRouter()
+
+	saveHandler := handler.NewSaveHandler(saver)
+	getHandler := handler.NewGetterHandler(getter, nil)
+	deleteHandler := handler.NewDeleteHandler(deleter, nil)
+
+	r.Route("/shorten", func(r chi.Router) {
+		r.Post("/", saveHandler.PostHandlerJSON)
+		r.Post("/batch", saveHandler.PostHandlerBatch)
+	})
+
+	r.Route("/user", func(r chi.Router) {
+		r.Get("/urls", getHandler.GetUserURLsHandler)
+		r.Delete("/urls", deleteHandler.DeleteUserURLsHandler)
+	})
+
 	return r
 }
 
@@ -49,18 +68,6 @@ func newPingRouter(pinger service.Pinger) chi.Router {
 		pingHandler := handler.NewPingHandler(pinger)
 		r.Get("/", pingHandler.PingHandler)
 	}
-
-	return r
-}
-
-func newUserRouter(getter service.URLGetter, deleter service.URLDelete, cfg *config.Config) chi.Router {
-	r := chi.NewRouter()
-
-	getHandler := handler.NewGetterHandler(getter, cfg)
-	deleteHandler := handler.NewDeleteHandler(deleter, cfg)
-
-	r.Get("/urls", getHandler.GetUserURLsHandler)
-	r.Delete("/urls", deleteHandler.DeleteUserURLsHandler)
 
 	return r
 }
