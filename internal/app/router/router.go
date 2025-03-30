@@ -22,18 +22,18 @@ func NewRouter(cfg *config.Config, saver service.URLSaver, getter service.URLGet
 	r.Use(middleware.AuthMiddleware(cfg.JWTKey))
 	r.Use(middleware.WithLogging)
 
-	r.Mount("/", newRootRouter(saver, getter))
-	r.Mount("/api", newAPIRouter(saver, getter, deleter))
+	r.Mount("/", newRootRouter(cfg,saver, getter))
+	r.Mount("/api", newAPIRouter(cfg,saver, getter, deleter))
 	r.Mount("/ping", newPingRouter(pinger))
 
 	return r
 }
 
-func newRootRouter(saver service.URLSaver, getter service.URLGetter) chi.Router {
+func newRootRouter(cfg *config.Config, saver service.URLSaver, getter service.URLGetter) chi.Router {
 	r := chi.NewRouter()
 
 	saveHandler := handler.NewSaveHandler(saver)
-	getHandler := handler.NewGetterHandler(getter, nil)
+	getHandler := handler.NewGetterHandler(getter, cfg)
 
 	r.Post("/", saveHandler.PostHandler)
 	r.Get("/{id}", getHandler.GetHandler)
@@ -41,12 +41,12 @@ func newRootRouter(saver service.URLSaver, getter service.URLGetter) chi.Router 
 	return r
 }
 
-func newAPIRouter(saver service.URLSaver, getter service.URLGetter, deleter service.URLDelete) chi.Router {
+func newAPIRouter(cfg *config.Config, saver service.URLSaver, getter service.URLGetter, deleter service.URLDelete) chi.Router {
 	r := chi.NewRouter()
 
 	saveHandler := handler.NewSaveHandler(saver)
-	getHandler := handler.NewGetterHandler(getter, nil)
-	deleteHandler := handler.NewDeleteHandler(deleter, nil)
+	getHandler := handler.NewGetterHandler(getter, cfg)
+	deleteHandler := handler.NewDeleteHandler(deleter, cfg)
 
 	r.Route("/shorten", func(r chi.Router) {
 		r.Post("/", saveHandler.PostHandlerJSON)
