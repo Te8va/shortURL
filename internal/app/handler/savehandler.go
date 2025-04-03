@@ -4,15 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
-	"github.com/Te8va/shortURL/internal/app/config"
 	"github.com/Te8va/shortURL/internal/app/domain"
 	appErrors "github.com/Te8va/shortURL/internal/app/errors"
 )
@@ -27,36 +24,6 @@ const (
 type URLSaver interface {
 	Save(ctx context.Context, userID int, url string) (string, error)
 	SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error)
-}
-
-type URLGetter interface {
-	Get(ctx context.Context, id string) (string, bool, bool)
-	GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error)
-}
-
-type URLDelete interface {
-	DeleteUserURLs(ctx context.Context, ids []string, userID int) error
-}
-
-type Pinger interface {
-	PingPg(ctx context.Context) error
-}
-
-type PingHandler struct {
-	pinger Pinger
-}
-
-func NewPingHandler(pinger Pinger) *PingHandler {
-	return &PingHandler{pinger: pinger}
-}
-
-func (u *PingHandler) PingHandler(w http.ResponseWriter, r *http.Request) {
-	err := u.pinger.PingPg(r.Context())
-	if err != nil {
-		http.Error(w, "Database connection failed", http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
 }
 
 type SaveHandler struct {
@@ -210,102 +177,4 @@ func (u *SaveHandler) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(batchResp); err != nil {
 		http.Error(w, "Ошибка записи ответа", http.StatusInternalServerError)
 	}
-}
-
-type GetterHandler struct {
-	getter URLGetter
-	cfg    *config.Config
-}
-
-func NewGetterHandler(getter URLGetter, cfg *config.Config) *GetterHandler {
-	return &GetterHandler{getter: getter, cfg: cfg}
-}
-
-func (u *GetterHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
-	id := strings.TrimPrefix(r.URL.Path, "/")
-	if id == "" {
-		http.Error(w, "Missing or invalid ID", http.StatusBadRequest)
-		return
-	}
-
-	id = fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
-	originalURL, exists, isDeleted := u.getter.Get(r.Context(), id)
-	if !exists {
-		http.Error(w, "URL not found", http.StatusNotFound)
-		return
-	}
-
-	if isDeleted {
-		http.Error(w, "URL has been deleted", http.StatusGone)
-		return
-	}
-
-	log.Printf("Redirecting ID %s to URL: %s", id, originalURL)
-	w.Header().Set("Location", originalURL)
-	w.WriteHeader(http.StatusTemporaryRedirect)
-}
-
-func (u *GetterHandler) GetUserURLsHandler(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value(domain.UserIDKey).(int)
-	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	urls, err := u.getter.GetUserURLs(r.Context(), userID)
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	if urls == nil {
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
-
-	w.Header().Set(ContentType, ContentTypeApp)
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(urls)
-}
-
-type DeleteHandler struct {
-	deleter URLDelete
-	cfg     *config.Config
-}
-
-func NewDeleteHandler(deleter URLDelete, cfg *config.Config) *DeleteHandler {
-	return &DeleteHandler{deleter: deleter, cfg: cfg}
-}
-
-func (u *DeleteHandler) DeleteUserURLsHandler(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value(domain.UserIDKey).(int)
-	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	var ids []string
-	if err := json.NewDecoder(r.Body).Decode(&ids); err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
-		return
-	}
-
-	if len(ids) == 0 {
-		http.Error(w, "Empty list of URLs", http.StatusBadRequest)
-		return
-	}
-
-	var fullURLs []string
-	for _, id := range ids {
-		fullURLs = append(fullURLs, fmt.Sprintf("%s/%s", u.cfg.BaseURL, id))
-	}
-
-	go func(fullURLs []string, userID int) {
-		err := u.deleter.DeleteUserURLs(context.Background(), fullURLs, userID)
-		if err != nil {
-			log.Printf("Ошибка при удалении URL: %v", err)
-		}
-	}(fullURLs, userID)
-
-	w.WriteHeader(http.StatusAccepted)
 }
