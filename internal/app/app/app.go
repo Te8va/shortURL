@@ -18,12 +18,13 @@ import (
 )
 
 type App struct {
-	cfg     *config.Config
-	logger  *zap.SugaredLogger
+	cfg    *config.Config
+	logger *zap.SugaredLogger
 	saver  service.URLSaver
 	getter service.URLGetter
 	pinger service.Pinger
-	server  *http.Server
+	deleter service.URLDelete
+	server *http.Server
 }
 
 func NewApp() (*App, error) {
@@ -76,7 +77,7 @@ func (a *App) initStorage() error {
 			a.logger.Fatalw("Failed to create Postgres connection pool", "error", err)
 		}
 
-		repo, err := repository.NewURLRepository(pool)
+		repo, err := repository.NewURLRepository(pool, a.cfg)
 		if err != nil {
 			a.logger.Fatalw("Failed to initialize Postgres repository", "error", err)
 		}
@@ -84,11 +85,12 @@ func (a *App) initStorage() error {
 		a.saver = repo
 		a.getter = repo
 		a.pinger = repo
+		a.deleter = repo
 
 	} else if a.cfg.FileStoragePath != "" {
 		a.logger.Infoln("Using JSON file as storage:", a.cfg.FileStoragePath)
 
-		storage, err := repository.NewJSONRepository(a.cfg.FileStoragePath)
+		storage, err := repository.NewJSONRepository(a.cfg.FileStoragePath, a.cfg)
 		if err != nil {
 			a.logger.Fatalw("Failed to initialize JSON repository", "error", err)
 		}
@@ -96,20 +98,22 @@ func (a *App) initStorage() error {
 		a.saver = storage
 		a.getter = storage
 		a.pinger = nil
+		a.deleter = nil
 
 	} else {
 		a.logger.Infoln("Using in-memory storage")
-		storage := repository.NewMemoryRepository()
+		storage := repository.NewMemoryRepository(a.cfg)
 
 		a.saver = storage
 		a.getter = storage
 		a.pinger = nil
+		a.deleter = nil
 	}
 	return nil
 }
 
 func (a *App) initServer() {
-	handler := router.NewRouter(a.cfg, a.saver, a.getter, a.pinger)
+	handler := router.NewRouter(a.cfg, a.saver, a.getter, a.pinger, a.deleter)
 
 	a.server = &http.Server{
 		Addr:    a.cfg.ServerAddress,

@@ -12,21 +12,62 @@ import (
 	"github.com/Te8va/shortURL/internal/app/service"
 )
 
-func NewRouter(cfg *config.Config, saver service.URLSaver, getter service.URLGetter, pinger service.Pinger) chi.Router {
-	srv := service.NewURLService(saver, getter, pinger)
-	store := handler.NewURLHandler(cfg, srv, srv, srv)
+func NewRouter(cfg *config.Config, saver service.URLSaver, getter service.URLGetter, pinger service.Pinger, deleter service.URLDelete) chi.Router {
 	r := chi.NewRouter()
 
 	if err := middleware.Initialize("info"); err != nil {
 		log.Println("Failed to initialize middleware:", err)
 	}
 
+	r.Use(middleware.AuthMiddleware(cfg.JWTKey))
 	r.Use(middleware.WithLogging)
-	r.Post("/", store.PostHandler)
-	r.Get("/{id}", store.GetHandler)
-	r.Post("/api/shorten", store.PostHandlerJSON)
-	r.Post("/api/shorten/batch", store.PostHandlerBatch)
-	r.Get("/ping", store.PingHandler)
+
+	r.Mount("/", newRootRouter(cfg,saver, getter))
+	r.Mount("/api", newAPIRouter(cfg,saver, getter, deleter))
+	r.Mount("/ping", newPingRouter(pinger))
+
+	return r
+}
+
+func newRootRouter(cfg *config.Config, saver service.URLSaver, getter service.URLGetter) chi.Router {
+	r := chi.NewRouter()
+
+	saveHandler := handler.NewSaveHandler(saver)
+	getHandler := handler.NewGetterHandler(getter, cfg)
+
+	r.Post("/", saveHandler.PostHandler)
+	r.Get("/{id}", getHandler.GetHandler)
+
+	return r
+}
+
+func newAPIRouter(cfg *config.Config, saver service.URLSaver, getter service.URLGetter, deleter service.URLDelete) chi.Router {
+	r := chi.NewRouter()
+
+	saveHandler := handler.NewSaveHandler(saver)
+	getHandler := handler.NewGetterHandler(getter, cfg)
+	deleteHandler := handler.NewDeleteHandler(deleter, cfg)
+
+	r.Route("/shorten", func(r chi.Router) {
+		r.Post("/", saveHandler.PostHandlerJSON)
+		r.Post("/batch", saveHandler.PostHandlerBatch)
+	})
+
+	r.Route("/user", func(r chi.Router) {
+		r.Get("/urls", getHandler.GetUserURLsHandler)
+		r.Delete("/urls", deleteHandler.DeleteUserURLsHandler)
+	})
+
+	return r
+}
+
+func newPingRouter(pinger service.Pinger) chi.Router {
+	r := chi.NewRouter()
+
+	if pinger != nil {
+		pingHandler := handler.NewPingHandler(pinger)
+		r.Get("/", pingHandler.PingHandler)
+	}
 
 	return r
 }

@@ -7,3 +7,7 @@ type ShortenRequest struct {
 type ShortenResponse struct {
 	Result string `json:"result"`
 }
+
+type contextKey string
+
+const UserIDKey contextKey = "userID"

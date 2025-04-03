@@ -8,6 +8,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/Te8va/shortURL/internal/app/config"
 	appErrors "github.com/Te8va/shortURL/internal/app/errors"
 )
 
@@ -15,18 +16,26 @@ const length = 8
 
 type JSONRepository struct {
 	file  string
-	store map[string]string
+	store map[string]URLData
 	mu    sync.RWMutex
+	cfg   *config.Config
 }
 
-func NewJSONRepository(filePath string) (*JSONRepository, error) {
+type URLData struct {
+	UserID      int    `json:"user_id"`
+	OriginalURL string `json:"original_url"`
+	ShortURL    string `json:"short_url"`
+}
+
+func NewJSONRepository(filePath string, cfg *config.Config) (*JSONRepository, error) {
 	if filePath == "" {
 		return nil, fmt.Errorf("путь к файлу не задан")
 	}
 
 	repo := &JSONRepository{
 		file:  filePath,
-		store: make(map[string]string),
+		store: make(map[string]URLData),
+		cfg:   cfg,
 	}
 
 	if err := repo.loadFromFile(); err != nil {
@@ -36,36 +45,44 @@ func NewJSONRepository(filePath string) (*JSONRepository, error) {
 	return repo, nil
 }
 
-func (r *JSONRepository) Save(ctx context.Context, url string) (string, error) {
+func (r *JSONRepository) Save(ctx context.Context, userID int, url string) (string, error) {
 	id := r.generateID()
+	shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
 
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	for key, val := range r.store {
-		if val == url {
+		if val.OriginalURL == url && val.UserID == userID {
 			return key, appErrors.ErrURLExists
 		}
 	}
 
-	r.store[id] = url
+	r.store[shortenedURL] = URLData{
+		UserID:      userID,
+		OriginalURL: url,
+		ShortURL:    shortenedURL,
+	}
 
 	if err := r.saveToFile(); err != nil {
 		return "", fmt.Errorf("ошибка сохранения в файл: %w", err)
 	}
 
-	return id, nil
+	return shortenedURL, nil
 }
 
-func (r *JSONRepository) Get(ctx context.Context, id string) (string, bool) {
+func (r *JSONRepository) Get(ctx context.Context, id string) (string, bool, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	url, exists := r.store[id]
-	return url, exists
+	if !exists {
+		return "", false, false
+	}
+	return url.OriginalURL, true, false
 }
 
-func (r *JSONRepository) SaveBatch(ctx context.Context, urls map[string]string) (map[string]string, error) {
+func (r *JSONRepository) SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error) {
 	result := make(map[string]string)
 
 	r.mu.Lock()
@@ -73,8 +90,13 @@ func (r *JSONRepository) SaveBatch(ctx context.Context, urls map[string]string) 
 
 	for correlationID, originalURL := range urls {
 		id := r.generateID()
-		r.store[id] = originalURL
-		result[correlationID] = id
+		shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
+		r.store[shortenedURL] = URLData{
+			UserID:      userID,
+			OriginalURL: originalURL,
+			ShortURL:    shortenedURL,
+		}
+		result[correlationID] = shortenedURL
 	}
 
 	if err := r.saveToFile(); err != nil {
@@ -125,6 +147,27 @@ func (r *JSONRepository) loadFromFile() error {
 	}
 
 	return nil
+}
+
+func (r *JSONRepository) GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	var urls []map[string]string
+	for _, data := range r.store {
+		if data.UserID == userID {
+			urls = append(urls, map[string]string{
+				"short_url":    data.ShortURL,
+				"original_url": data.OriginalURL,
+			})
+		}
+	}
+
+	if len(urls) == 0 {
+		return nil, nil
+	}
+
+	return urls, nil
 }
 
 func (r *JSONRepository) generateID() string {
