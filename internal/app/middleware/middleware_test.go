@@ -26,6 +26,8 @@ func TestWithLogging(t *testing.T) {
 	handler.ServeHTTP(w, req)
 
 	resp := w.Result()
+	defer resp.Body.Close()
+	
 	body := w.Body.String()
 
 	require.Equal(t, http.StatusTeapot, resp.StatusCode)
