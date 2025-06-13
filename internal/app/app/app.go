@@ -9,22 +9,23 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/golang-migrate/migrate/v4"
+	"go.uber.org/zap"
+
 	"github.com/Te8va/shortURL/internal/app/config"
 	"github.com/Te8va/shortURL/internal/app/repository"
 	"github.com/Te8va/shortURL/internal/app/router"
 	"github.com/Te8va/shortURL/internal/app/service"
-	"github.com/golang-migrate/migrate/v4"
-	"go.uber.org/zap"
 )
 
 type App struct {
-	cfg    *config.Config
-	logger *zap.SugaredLogger
-	saver  service.URLSaverServ
-	getter service.URLGetterServ
-	pinger service.PingerServ
+	cfg     *config.Config
+	logger  *zap.SugaredLogger
+	saver   service.URLSaverServ
+	getter  service.URLGetterServ
+	pinger  service.PingerServ
 	deleter service.URLDeleteServ
-	server *http.Server
+	server  *http.Server
 }
 
 func NewApp() (*App, error) {

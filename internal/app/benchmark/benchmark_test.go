@@ -30,7 +30,7 @@ func initBenchmarkRouter(b *testing.B) {
 
 		mockSaver.EXPECT().Save(gomock.Any(), gomock.Any(), gomock.Any()).Return("shortURL", nil).AnyTimes()
 		mockSaver.EXPECT().SaveBatch(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
-		mockGetter.EXPECT().Get(gomock.Any(), gomock.Any()).Return("https://example.com",true, true).AnyTimes()
+		mockGetter.EXPECT().Get(gomock.Any(), gomock.Any()).Return("https://example.com", true, true).AnyTimes()
 		mockGetter.EXPECT().GetUserURLs(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 		mockDeleter.EXPECT().DeleteUserURLs(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 

@@ -4,10 +4,11 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/Te8va/shortURL/internal/app/repository"
-	"github.com/Te8va/shortURL/internal/app/repository/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Te8va/shortURL/internal/app/repository"
+	"github.com/Te8va/shortURL/internal/app/repository/mocks"
 )
 
 func TestMigrations(t *testing.T) {

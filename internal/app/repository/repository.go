@@ -6,10 +6,11 @@ import (
 	"log"
 	"math/rand"
 
-	"github.com/Te8va/shortURL/internal/app/config"
-	appErrors "github.com/Te8va/shortURL/internal/app/errors"
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/Te8va/shortURL/internal/app/config"
+	appErrors "github.com/Te8va/shortURL/internal/app/errors"
 )
 
 type URLRepository struct {

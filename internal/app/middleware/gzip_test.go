@@ -8,8 +8,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Te8va/shortURL/internal/app/middleware"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Te8va/shortURL/internal/app/middleware"
 )
 
 func TestGzipHandle(t *testing.T) {

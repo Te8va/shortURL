@@ -8,8 +8,9 @@ import (
 	"math/big"
 	"net/http"
 
-	"github.com/Te8va/shortURL/internal/app/domain"
 	"github.com/golang-jwt/jwt/v4"
+
+	"github.com/Te8va/shortURL/internal/app/domain"
 )
 
 type Claims struct {

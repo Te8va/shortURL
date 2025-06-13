@@ -8,11 +8,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
 
+	mdlwr "github.com/go-chi/chi/v5/middleware"
+
 	"github.com/Te8va/shortURL/internal/app/config"
 	"github.com/Te8va/shortURL/internal/app/handler"
 	"github.com/Te8va/shortURL/internal/app/middleware"
 	"github.com/Te8va/shortURL/internal/app/service"
-	mdlwr "github.com/go-chi/chi/v5/middleware"
 )
 
 func NewRouter(cfg *config.Config, saver service.URLSaverServ, getter service.URLGetterServ, pinger service.PingerServ, deleter service.URLDeleteServ) chi.Router {

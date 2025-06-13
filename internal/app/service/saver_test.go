@@ -5,10 +5,11 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/Te8va/shortURL/internal/app/service"
-	"github.com/Te8va/shortURL/internal/app/service/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/Te8va/shortURL/internal/app/service"
+	"github.com/Te8va/shortURL/internal/app/service/mocks"
 )
 
 func TestURLService_Save(t *testing.T) {

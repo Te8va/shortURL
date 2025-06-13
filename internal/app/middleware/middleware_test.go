@@ -5,8 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Te8va/shortURL/internal/app/middleware"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Te8va/shortURL/internal/app/middleware"
 )
 
 func TestWithLogging(t *testing.T) {
@@ -14,7 +15,7 @@ func TestWithLogging(t *testing.T) {
 	require.NoError(t, err)
 
 	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusTeapot) 
+		w.WriteHeader(http.StatusTeapot)
 		_, _ = w.Write([]byte("hello world"))
 	})
 
@@ -27,7 +28,7 @@ func TestWithLogging(t *testing.T) {
 
 	resp := w.Result()
 	defer resp.Body.Close()
-	
+
 	body := w.Body.String()
 
 	require.Equal(t, http.StatusTeapot, resp.StatusCode)

@@ -5,9 +5,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/Te8va/shortURL/internal/app/domain"
 	"github.com/Te8va/shortURL/internal/app/middleware"
-	"github.com/stretchr/testify/require"
 )
 
 const secretKey = "test_secret"
