@@ -50,7 +50,7 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 }
 
 func WithLogging(h http.Handler) http.Handler {
-	return gzipHandle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return GzipHandle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
 		duration := time.Since(start)

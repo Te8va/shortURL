@@ -10,6 +10,7 @@ import (
 	"github.com/Te8va/shortURL/internal/app/domain"
 )
 
+//go:generate mockgen -source=deletehandler.go -destination=mocks/url_delete_mock.gen.go -package=mocks
 type URLDelete interface {
 	DeleteUserURLs(ctx context.Context, ids []string, userID int) error
 }

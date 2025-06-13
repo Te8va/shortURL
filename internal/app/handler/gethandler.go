@@ -12,6 +12,7 @@ import (
 	"github.com/Te8va/shortURL/internal/app/domain"
 )
 
+//go:generate mockgen -source=gethandler.go -destination=mocks/url_getter_mock.gen.go -package=mocks
 type URLGetter interface {
 	Get(ctx context.Context, id string) (string, bool, bool)
 	GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error)

@@ -20,10 +20,10 @@ import (
 type App struct {
 	cfg    *config.Config
 	logger *zap.SugaredLogger
-	saver  service.URLSaver
-	getter service.URLGetter
-	pinger service.Pinger
-	deleter service.URLDelete
+	saver  service.URLSaverServ
+	getter service.URLGetterServ
+	pinger service.PingerServ
+	deleter service.URLDeleteServ
 	server *http.Server
 }
 

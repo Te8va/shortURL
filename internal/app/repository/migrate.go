@@ -9,6 +9,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
+//go:generate mockgen -destination=mocks/migrator_mock.gen.go -package=mocks . Migrator
 type Migrator interface {
 	Up() error
 	Close() (sourceErr, databaseErr error)

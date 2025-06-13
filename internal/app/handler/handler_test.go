@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 
 	"github.com/Te8va/shortURL/internal/app/config"
 	"github.com/Te8va/shortURL/internal/app/domain"
-	"github.com/Te8va/shortURL/internal/app/service/mocks"
+	"github.com/Te8va/shortURL/internal/app/handler/mocks"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -206,4 +207,177 @@ func TestPingHandler(t *testing.T) {
 	pingHandler.PingHandler(w, req)
 
 	require.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestDeleteUserURLsHandler(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDeleter := mocks.NewMockURLDelete(ctrl)
+	testCfg := &config.Config{BaseURL: "http://localhost:8080"}
+	deleteHandler := NewDeleteHandler(mockDeleter, testCfg)
+
+	testCases := []struct {
+		name       string
+		body       interface{}
+		userID     interface{}
+		wantCode   int
+		expectCall bool
+	}{
+		{
+			name:       "valid request",
+			body:       []string{"abc123", "def456"},
+			userID:     42,
+			wantCode:   http.StatusAccepted,
+			expectCall: true,
+		},
+		{
+			name:       "unauthorized",
+			body:       []string{"abc123"},
+			userID:     nil,
+			wantCode:   http.StatusUnauthorized,
+			expectCall: false,
+		},
+		{
+			name:       "invalid JSON",
+			body:       "{not:json}",
+			userID:     42,
+			wantCode:   http.StatusBadRequest,
+			expectCall: false,
+		},
+		{
+			name:       "empty list",
+			body:       []string{},
+			userID:     42,
+			wantCode:   http.StatusBadRequest,
+			expectCall: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var bodyBytes []byte
+			switch v := tc.body.(type) {
+			case string:
+				bodyBytes = []byte(v)
+			default:
+				bodyBytes, _ = json.Marshal(v)
+			}
+
+			req := httptest.NewRequest(http.MethodDelete, "/api/user/urls", bytes.NewReader(bodyBytes))
+			if tc.userID != nil {
+				req = req.WithContext(context.WithValue(req.Context(), domain.UserIDKey, tc.userID))
+			}
+
+			if tc.expectCall {
+				var ids []string
+				_ = json.Unmarshal(bodyBytes, &ids)
+				var full []string
+				for _, id := range ids {
+					full = append(full, fmt.Sprintf("%s/%s", testCfg.BaseURL, id))
+				}
+
+				done := make(chan struct{})
+				mockDeleter.EXPECT().
+					DeleteUserURLs(gomock.Any(), full, tc.userID.(int)).
+					DoAndReturn(func(ctx context.Context, ids []string, userID int) error {
+						close(done)
+						return nil
+					}).Times(1)
+
+				w := httptest.NewRecorder()
+				deleteHandler.DeleteUserURLsHandler(w, req)
+
+				<-done
+				require.Equal(t, tc.wantCode, w.Code)
+			} else {
+				w := httptest.NewRecorder()
+				deleteHandler.DeleteUserURLsHandler(w, req)
+				require.Equal(t, tc.wantCode, w.Code)
+			}
+		})
+	}
+
+}
+func TestGetUserURLsHandler(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockGetter := mocks.NewMockURLGetter(ctrl)
+	testCfg := &config.Config{BaseURL: "http://localhost:8080"}
+	handler := NewGetterHandler(mockGetter, testCfg)
+
+	testCases := []struct {
+		name       string
+		userID     interface{}
+		mockResult []map[string]string
+		mockErr    error
+		wantCode   int
+		wantBody   []map[string]string
+	}{
+		{
+			name:   "authorized with URLs",
+			userID: 123,
+			mockResult: []map[string]string{
+				{
+					"short_url":    "http://localhost:8080/abc",
+					"original_url": "http://example.com",
+				},
+			},
+			mockErr:  nil,
+			wantCode: http.StatusOK,
+			wantBody: []map[string]string{
+				{
+					"short_url":    "http://localhost:8080/abc",
+					"original_url": "http://example.com",
+				},
+			},
+		},
+		{
+			name:       "authorized with no URLs",
+			userID:     123,
+			mockResult: nil,
+			mockErr:    nil,
+			wantCode:   http.StatusNoContent,
+		},
+		{
+			name:     "unauthorized",
+			userID:   nil,
+			wantCode: http.StatusUnauthorized,
+		},
+		{
+			name:     "internal error",
+			userID:   123,
+			mockErr:  fmt.Errorf("db error"),
+			wantCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/api/user/urls", nil)
+			if tc.userID != nil {
+				req = req.WithContext(context.WithValue(req.Context(), domain.UserIDKey, tc.userID))
+			}
+
+			if tc.userID != nil {
+				mockGetter.EXPECT().
+					GetUserURLs(gomock.Any(), tc.userID.(int)).
+					Return(tc.mockResult, tc.mockErr).
+					Times(1)
+			}
+
+			w := httptest.NewRecorder()
+			handler.GetUserURLsHandler(w, req)
+
+			require.Equal(t, tc.wantCode, w.Code)
+
+			if tc.wantCode == http.StatusOK {
+				var got []map[string]string
+				err := json.NewDecoder(w.Body).Decode(&got)
+				require.NoError(t, err)
+				require.Equal(t, tc.wantBody, got)
+			}
+		})
+	}
 }

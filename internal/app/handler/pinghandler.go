@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+//go:generate mockgen -source=pinghandler.go -destination=mocks/url_pinger_mock.gen.go -package=mocks
 type Pinger interface {
 	PingPg(ctx context.Context) error
 }

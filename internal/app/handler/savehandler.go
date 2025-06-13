@@ -21,6 +21,8 @@ const (
 	ContentTypeApp  = "application/json"
 )
 
+//go:generate mockgen -source=savehandler.go -destination=mocks/url_saver_mock.gen.go -package=mocks
+
 type URLSaver interface {
 	Save(ctx context.Context, userID int, url string) (string, error)
 	SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error)
