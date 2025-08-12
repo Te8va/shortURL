@@ -26,7 +26,11 @@ func ExamplePingHandler_PingHandler() {
 	ts := httptest.NewServer(r)
 	defer ts.Close()
 
-	resp, _ := http.Get(ts.URL + "/ping")
+	resp, err := http.Get(ts.URL + "/ping")
+	if err != nil {
+		fmt.Println("request failed:", err)
+		return
+	}
 	defer resp.Body.Close()
 
 	fmt.Println(resp.StatusCode)

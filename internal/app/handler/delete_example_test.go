@@ -40,7 +40,11 @@ func ExampleDeleteHandler_DeleteUserURLsHandler() {
 	req, _ := http.NewRequest(http.MethodDelete, ts.URL+"/user/urls", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, _ := http.DefaultClient.Do(req)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		fmt.Println("request failed:", err)
+		return
+	}
 	defer resp.Body.Close()
 	fmt.Println(resp.StatusCode)
 

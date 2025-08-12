@@ -72,7 +72,11 @@ func ExampleGetterHandler_GetUserURLsHandler() {
 		h.GetUserURLsHandler(w, r.WithContext(ctx))
 	})
 
-	resp, _ := http.Get(ts.URL + "/user/urls")
+	resp, err := http.Get(ts.URL + "/user/urls")
+	if err != nil {
+		fmt.Println("request failed:", err)
+		return
+	}
 	defer resp.Body.Close()
 
 	var urls []map[string]string

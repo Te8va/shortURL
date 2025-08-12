@@ -36,7 +36,11 @@ func ExampleSaveHandler_PostHandler() {
 	defer ts.Close()
 
 	reqBody := bytes.NewBufferString("https://example.com")
-	resp, _ := http.Post(ts.URL+"/", "text/plain", reqBody)
+	resp, err := http.Post(ts.URL+"/", "text/plain", reqBody)
+	if err != nil {
+		fmt.Println("request failed:", err)
+		return
+	}
 	defer resp.Body.Close()
 
 	fmt.Println(resp.StatusCode)
@@ -56,7 +60,12 @@ func ExampleSaveHandler_PostHandlerJSON() {
 	reqData := domain.ShortenRequest{URL: "https://example.com"}
 	reqBytes, _ := json.Marshal(reqData)
 
-	resp, _ := http.Post(ts.URL+"/api/shorten", "application/json", bytes.NewBuffer(reqBytes))
+	resp, err := http.Post(ts.URL+"/api/shorten", "application/json", bytes.NewBuffer(reqBytes))
+	if err != nil {
+		fmt.Println("request failed:", err)
+		return
+	}
+
 	defer resp.Body.Close()
 
 	fmt.Println(resp.StatusCode)
@@ -79,7 +88,12 @@ func ExampleSaveHandler_PostHandlerBatch() {
 	}
 	reqBytes, _ := json.Marshal(batchReq)
 
-	resp, _ := http.Post(ts.URL+"/api/shorten/batch", "application/json", bytes.NewBuffer(reqBytes))
+	resp, err := http.Post(ts.URL+"/api/shorten/batch", "application/json", bytes.NewBuffer(reqBytes))
+	if err != nil {
+		fmt.Println("request failed:", err)
+		return
+	}
+
 	defer resp.Body.Close()
 	fmt.Println(resp.StatusCode)
 
