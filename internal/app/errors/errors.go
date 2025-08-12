@@ -2,6 +2,7 @@ package errors
 
 import "errors"
 
+// Error variables used throughout the application to represent error
 var (
 	// ErrURLExists indicates that the given URL already exists
 	ErrURLExists = errors.New("URL уже существует")
