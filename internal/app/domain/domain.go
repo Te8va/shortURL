@@ -12,4 +12,5 @@ type ShortenResponse struct {
 
 type contextKey string
 
+// UserIDKey is the key used to store the user ID in context
 const UserIDKey contextKey = "userID"

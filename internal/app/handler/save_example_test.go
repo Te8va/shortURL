@@ -37,6 +37,8 @@ func ExampleSaveHandler_PostHandler() {
 
 	reqBody := bytes.NewBufferString("https://example.com")
 	resp, _ := http.Post(ts.URL+"/", "text/plain", reqBody)
+	defer resp.Body.Close()
+
 	fmt.Println(resp.StatusCode)
 
 	// Output:
@@ -55,6 +57,8 @@ func ExampleSaveHandler_PostHandlerJSON() {
 	reqBytes, _ := json.Marshal(reqData)
 
 	resp, _ := http.Post(ts.URL+"/api/shorten", "application/json", bytes.NewBuffer(reqBytes))
+	defer resp.Body.Close()
+
 	fmt.Println(resp.StatusCode)
 
 	// Output:
@@ -76,6 +80,7 @@ func ExampleSaveHandler_PostHandlerBatch() {
 	reqBytes, _ := json.Marshal(batchReq)
 
 	resp, _ := http.Post(ts.URL+"/api/shorten/batch", "application/json", bytes.NewBuffer(reqBytes))
+	defer resp.Body.Close()
 	fmt.Println(resp.StatusCode)
 
 	// Output:

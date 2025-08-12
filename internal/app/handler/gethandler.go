@@ -77,7 +77,7 @@ func (u *GetterHandler) GetUserURLsHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	w.Header().Set(ContentType, ContentTypeApp)
+	w.Header().Set(contentType, contentTypeApp)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(urls)
 }

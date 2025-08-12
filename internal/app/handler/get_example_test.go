@@ -46,7 +46,12 @@ func ExampleGetterHandler_GetHandler() {
 		},
 	}
 
-	resp, _ := client.Get(ts.URL + "/abc123")
+	resp, err := client.Get(ts.URL + "/abc123")
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
 	fmt.Println(resp.StatusCode)
 	fmt.Println(resp.Header.Get("Location"))
 	// Output:

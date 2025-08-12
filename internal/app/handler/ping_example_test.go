@@ -27,6 +27,8 @@ func ExamplePingHandler_PingHandler() {
 	defer ts.Close()
 
 	resp, _ := http.Get(ts.URL + "/ping")
+	defer resp.Body.Close()
+
 	fmt.Println(resp.StatusCode)
 
 	// Output:

@@ -41,6 +41,7 @@ func ExampleDeleteHandler_DeleteUserURLsHandler() {
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, _ := http.DefaultClient.Do(req)
+	defer resp.Body.Close()
 	fmt.Println(resp.StatusCode)
 
 	// Output:

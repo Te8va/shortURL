@@ -17,9 +17,9 @@ import (
 
 const (
 	length          = 8
-	ContentType     = "Content-Type"
-	ContentTypeText = "text/plain"
-	ContentTypeApp  = "application/json"
+	contentType     = "Content-Type"
+	contentTypeText = "text/plain"
+	contentTypeApp  = "application/json"
 )
 
 // URLSaver defines an interface for saving URLs.
@@ -42,7 +42,7 @@ func NewSaveHandler(saver URLSaver) *SaveHandler {
 
 // PostHandler processes requests to save URL.
 func (u *SaveHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
-	if !strings.HasPrefix(r.Header.Get(ContentType), ContentTypeText) {
+	if !strings.HasPrefix(r.Header.Get(contentType), contentTypeText) {
 		http.Error(w, "Content-Type must be text/plain", http.StatusBadRequest)
 		return
 	}
@@ -76,7 +76,7 @@ func (u *SaveHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to save URL", http.StatusBadRequest)
 			return
 		}
-		w.Header().Set(ContentType, ContentTypeText)
+		w.Header().Set(contentType, contentTypeText)
 		w.WriteHeader(http.StatusConflict)
 		if _, err := w.Write([]byte(id)); err != nil {
 			http.Error(w, "Failed to write response", http.StatusInternalServerError)
@@ -84,7 +84,7 @@ func (u *SaveHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set(ContentType, ContentTypeText)
+	w.Header().Set(contentType, contentTypeText)
 	w.WriteHeader(http.StatusCreated)
 	if _, err := w.Write([]byte(id)); err != nil {
 		http.Error(w, "Failed to write response", http.StatusBadRequest)
@@ -94,7 +94,7 @@ func (u *SaveHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 
 // PostHandlerJSON processes JSON-formatted POST requests to save URL.
 func (u *SaveHandler) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
-	if !strings.HasPrefix(r.Header.Get(ContentType), ContentTypeApp) {
+	if !strings.HasPrefix(r.Header.Get(contentType), contentTypeApp) {
 		http.Error(w, "Content-Type must be application/json", http.StatusBadRequest)
 		return
 	}
@@ -116,7 +116,7 @@ func (u *SaveHandler) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
 
 	if errors.Is(err, appErrors.ErrURLExists) {
 		resp := domain.ShortenResponse{Result: id}
-		w.Header().Set(ContentType, ContentTypeApp)
+		w.Header().Set(contentType, contentTypeApp)
 		w.WriteHeader(http.StatusConflict)
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			http.Error(w, "Failed to write response", http.StatusInternalServerError)
@@ -130,7 +130,7 @@ func (u *SaveHandler) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
 
 	resp := domain.ShortenResponse{Result: id}
 
-	w.Header().Set(ContentType, ContentTypeApp)
+	w.Header().Set(contentType, contentTypeApp)
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		http.Error(w, "Failed to write response", http.StatusInternalServerError)
@@ -183,7 +183,7 @@ func (u *SaveHandler) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	w.Header().Set(ContentType, ContentTypeApp)
+	w.Header().Set(contentType, contentTypeApp)
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(batchResp); err != nil {
 		http.Error(w, "Ошибка записи ответа", http.StatusInternalServerError)

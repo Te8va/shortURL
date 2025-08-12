@@ -39,6 +39,7 @@ func GetPgxPool(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
 	return pool, nil
 }
 
+// WithTransaction executes the provided function within a PostgreSQL transaction
 func (p *postgres) WithTransaction(ctx context.Context, txFunc func(pgx.Tx) error) error {
 	conn, err := p.Pool.Acquire(ctx)
 	if err != nil {
