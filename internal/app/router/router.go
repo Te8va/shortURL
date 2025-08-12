@@ -16,6 +16,7 @@ import (
 	"github.com/Te8va/shortURL/internal/app/service"
 )
 
+// NewRouter creates and configures the main HTTP router for the application
 func NewRouter(cfg *config.Config, saver service.URLSaverServ, getter service.URLGetterServ, pinger service.PingerServ, deleter service.URLDeleteServ) chi.Router {
 	r := chi.NewRouter()
 

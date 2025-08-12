@@ -18,6 +18,7 @@ import (
 	"github.com/Te8va/shortURL/internal/app/service"
 )
 
+// App represents the core application structure
 type App struct {
 	cfg     *config.Config
 	logger  *zap.SugaredLogger
@@ -28,6 +29,7 @@ type App struct {
 	server  *http.Server
 }
 
+// NewApp creates a new App instance
 func NewApp() (*App, error) {
 	cfg := config.NewConfig()
 
@@ -122,6 +124,7 @@ func (a *App) initServer() {
 	}
 }
 
+// Run starts the HTTP server and listens for OS signals to gracefully shut down all resources before exiting
 func (a *App) Run() error {
 	defer func() {
 		if err := a.logger.Sync(); err != nil {

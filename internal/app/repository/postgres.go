@@ -9,14 +9,17 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// postgres wrapper around pgxpool.Pool for working with PostgreSQL
 type postgres struct {
 	*pgxpool.Pool
 }
 
+// NewPostgres creates a new postgres object with the given connection pool
 func NewPostgres(pool *pgxpool.Pool) *postgres {
 	return &postgres{pool}
 }
 
+// GetPgxPool creates a PostgreSQL connection pool using the provided DSN. Verifies the connection by calling Ping.
 func GetPgxPool(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {

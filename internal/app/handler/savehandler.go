@@ -1,3 +1,4 @@
+// package handler contains handlers for saving new URLs, including single and batch operations.
 package handler
 
 import (
@@ -21,21 +22,25 @@ const (
 	ContentTypeApp  = "application/json"
 )
 
+// URLSaver defines an interface for saving URLs.
+//
 //go:generate mockgen -source=savehandler.go -destination=mocks/url_saver_mock.gen.go -package=mocks
-
 type URLSaver interface {
 	Save(ctx context.Context, userID int, url string) (string, error)
 	SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error)
 }
 
+// SaveHandler handles requests for saving URLs.
 type SaveHandler struct {
 	saver URLSaver
 }
 
+// NewSaveHandler creates a new instance of SaveHandler.
 func NewSaveHandler(saver URLSaver) *SaveHandler {
 	return &SaveHandler{saver: saver}
 }
 
+// PostHandler processes requests to save URL.
 func (u *SaveHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 	if !strings.HasPrefix(r.Header.Get(ContentType), ContentTypeText) {
 		http.Error(w, "Content-Type must be text/plain", http.StatusBadRequest)
@@ -87,6 +92,7 @@ func (u *SaveHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// PostHandlerJSON processes JSON-formatted POST requests to save URL.
 func (u *SaveHandler) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
 	if !strings.HasPrefix(r.Header.Get(ContentType), ContentTypeApp) {
 		http.Error(w, "Content-Type must be application/json", http.StatusBadRequest)
@@ -132,16 +138,19 @@ func (u *SaveHandler) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// BatchRequest represents an individual request item in a batch of URLs to shorten
 type BatchRequest struct {
 	CorrelationID string `json:"correlation_id"`
 	OriginalURL   string `json:"original_url"`
 }
 
+// BatchResponse represents a shortened URL response for a single batch item.
 type BatchResponse struct {
 	CorrelationID string `json:"correlation_id"`
 	ShortURL      string `json:"short_url"`
 }
 
+// PostHandlerBatch processes batch URL saving requests in JSON format.
 func (u *SaveHandler) PostHandlerBatch(w http.ResponseWriter, r *http.Request) {
 	userID, _ := r.Context().Value(domain.UserIDKey).(int)
 

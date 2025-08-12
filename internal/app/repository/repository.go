@@ -13,11 +13,13 @@ import (
 	appErrors "github.com/Te8va/shortURL/internal/app/errors"
 )
 
+// URLRepository — repository for managing shortened URLs in PostgreSQL.
 type URLRepository struct {
 	db  *pgxpool.Pool
 	cfg *config.Config
 }
 
+// NewURLRepository creates a new URLRepository instance with the given connection pool and configuration.
 func NewURLRepository(db *pgxpool.Pool, cfg *config.Config) (*URLRepository, error) {
 	if db == nil {
 		return nil, fmt.Errorf("database connection is nil")
@@ -28,6 +30,7 @@ func NewURLRepository(db *pgxpool.Pool, cfg *config.Config) (*URLRepository, err
 	return &URLRepository{db: db, cfg: cfg}, nil
 }
 
+// PingPg checks the availability of the PostgreSQL database.
 func (r *URLRepository) PingPg(ctx context.Context) error {
 	err := r.db.Ping(ctx)
 	if err != nil {
@@ -37,6 +40,7 @@ func (r *URLRepository) PingPg(ctx context.Context) error {
 	return nil
 }
 
+// Save stores URL and returns its shortened version
 func (r *URLRepository) Save(ctx context.Context, userID int, url string) (string, error) {
 	id := r.generateID()
 	shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
@@ -65,6 +69,7 @@ func (r *URLRepository) Save(ctx context.Context, userID int, url string) (strin
 	return existingShort, nil
 }
 
+// Get returns the original URL by its shortened identifier
 func (r *URLRepository) Get(ctx context.Context, id string) (string, bool, bool) {
 	query := `SELECT original, is_deleted FROM urlshrt WHERE short = $1;`
 
@@ -83,6 +88,7 @@ func (r *URLRepository) Get(ctx context.Context, id string) (string, bool, bool)
 	return originalURL, true, isDeleted
 }
 
+// SaveBatch stores multiple URLs in a single call.
 func (r *URLRepository) SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
@@ -137,6 +143,7 @@ func (r *URLRepository) generateID() string {
 	}
 }
 
+// GetUserURLs returns all URLs belonging to a specific user
 func (r *URLRepository) GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error) {
 	query := `SELECT short, original FROM urlshrt WHERE user_id = $1;`
 
@@ -165,6 +172,7 @@ func (r *URLRepository) GetUserURLs(ctx context.Context, userID int) ([]map[stri
 	return urls, nil
 }
 
+// DeleteUserURLs marks URLs as deleted for user.
 func (r *URLRepository) DeleteUserURLs(ctx context.Context, ids []string, userID int) error {
 	query := `UPDATE urlshrt SET is_deleted = true WHERE short = ANY($1) AND user_id = $2;`
 

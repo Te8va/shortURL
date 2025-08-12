@@ -1,3 +1,4 @@
+// package handler contains logic for deleting user-specific URLs.
 package handler
 
 import (
@@ -10,20 +11,25 @@ import (
 	"github.com/Te8va/shortURL/internal/app/domain"
 )
 
+// URLDelete defines an interface for deleting user URLs
+//
 //go:generate mockgen -source=deletehandler.go -destination=mocks/url_delete_mock.gen.go -package=mocks
 type URLDelete interface {
 	DeleteUserURLs(ctx context.Context, ids []string, userID int) error
 }
 
+// DeleteHandler handles requests for deleting user URLs
 type DeleteHandler struct {
 	deleter URLDelete
 	cfg     *config.Config
 }
 
+// NewDeleteHandler creates a new instance of DeleteHandler.
 func NewDeleteHandler(deleter URLDelete, cfg *config.Config) *DeleteHandler {
 	return &DeleteHandler{deleter: deleter, cfg: cfg}
 }
 
+// DeleteUserURLsHandler processes requests to delete user URLs.
 func (u *DeleteHandler) DeleteUserURLsHandler(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(domain.UserIDKey).(int)
 	if !ok {

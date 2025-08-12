@@ -8,11 +8,13 @@ import (
 	"github.com/Te8va/shortURL/internal/app/config"
 )
 
+// MemoryRepository is a storage implementation that keeps data in memory.
 type MemoryRepository struct {
 	store map[string]string
 	cfg   *config.Config
 }
 
+// NewMemoryRepository creates a new in-memory repository.
 func NewMemoryRepository(cfg *config.Config) *MemoryRepository {
 	return &MemoryRepository{
 		store: make(map[string]string),
@@ -20,6 +22,7 @@ func NewMemoryRepository(cfg *config.Config) *MemoryRepository {
 	}
 }
 
+// Save stores URL and returns its shortened version.
 func (r *MemoryRepository) Save(ctx context.Context, userID int, url string) (string, error) {
 	id := r.generateID()
 	shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
@@ -28,6 +31,7 @@ func (r *MemoryRepository) Save(ctx context.Context, userID int, url string) (st
 	return shortenedURL, nil
 }
 
+// Get returns the original URL by its shortened identifier
 func (r *MemoryRepository) Get(ctx context.Context, id string) (string, bool, bool) {
 	url, exists := r.store[id]
 	if !exists {
@@ -36,6 +40,7 @@ func (r *MemoryRepository) Get(ctx context.Context, id string) (string, bool, bo
 	return url, true, false
 }
 
+// SaveBatch stores multiple URLs in a single call
 func (r *MemoryRepository) SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error) {
 	result := make(map[string]string)
 	for correlationID, originalURL := range urls {
@@ -67,6 +72,7 @@ func (r *MemoryRepository) generateID() string {
 	}
 }
 
+// GetUserURLs returns all URLs belonging to a specific user
 func (r *MemoryRepository) GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error) {
 	return []map[string]string{}, nil
 }

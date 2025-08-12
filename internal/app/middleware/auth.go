@@ -13,11 +13,13 @@ import (
 	"github.com/Te8va/shortURL/internal/app/domain"
 )
 
+// Claims defines the JWT claims containing the user ID
 type Claims struct {
 	UserID int `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
+// GenerateToken creates a signed JWT containing a random user ID
 func GenerateToken(secretKey string) (string, int, error) {
 	id, err := rand.Int(rand.Reader, big.NewInt(1000000))
 	if err != nil {
@@ -37,7 +39,7 @@ func GenerateToken(secretKey string) (string, int, error) {
 	return tokenString, claims.UserID, nil
 }
 
-func GetUserIDFromCookie(r *http.Request, secretKey string) (int, bool) {
+func getUserIDFromCookie(r *http.Request, secretKey string) (int, bool) {
 	cookie, err := r.Cookie("auth")
 	if err != nil {
 		return 0, false
@@ -63,10 +65,11 @@ func GetUserIDFromCookie(r *http.Request, secretKey string) (int, bool) {
 	return claims.UserID, true
 }
 
+// AuthMiddleware is an HTTP middleware that ensures the request has a valid user authentication cookie. If absent, it issues a new token and sets the cookie
 func AuthMiddleware(secretKey string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			userID, valid := GetUserIDFromCookie(r, secretKey)
+			userID, valid := getUserIDFromCookie(r, secretKey)
 
 			if !valid {
 				tokenString, newUserID, err := GenerateToken(secretKey)
