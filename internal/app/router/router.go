@@ -3,8 +3,12 @@ package router
 import (
 	"log"
 
+	_ "net/http/pprof"
+
 	"github.com/go-chi/chi/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
+
+	mdlwr "github.com/go-chi/chi/v5/middleware"
 
 	"github.com/Te8va/shortURL/internal/app/config"
 	"github.com/Te8va/shortURL/internal/app/handler"
@@ -12,7 +16,8 @@ import (
 	"github.com/Te8va/shortURL/internal/app/service"
 )
 
-func NewRouter(cfg *config.Config, saver service.URLSaver, getter service.URLGetter, pinger service.Pinger, deleter service.URLDelete) chi.Router {
+// NewRouter creates and configures the main HTTP router for the application
+func NewRouter(cfg *config.Config, saver service.URLSaverServ, getter service.URLGetterServ, pinger service.PingerServ, deleter service.URLDeleteServ) chi.Router {
 	r := chi.NewRouter()
 
 	if err := middleware.Initialize("info"); err != nil {
@@ -22,14 +27,15 @@ func NewRouter(cfg *config.Config, saver service.URLSaver, getter service.URLGet
 	r.Use(middleware.AuthMiddleware(cfg.JWTKey))
 	r.Use(middleware.WithLogging)
 
-	r.Mount("/", newRootRouter(cfg,saver, getter))
-	r.Mount("/api", newAPIRouter(cfg,saver, getter, deleter))
+	r.Mount("/", newRootRouter(cfg, saver, getter))
+	r.Mount("/api", newAPIRouter(cfg, saver, getter, deleter))
 	r.Mount("/ping", newPingRouter(pinger))
+	r.Mount("/debug", mdlwr.Profiler())
 
 	return r
 }
 
-func newRootRouter(cfg *config.Config, saver service.URLSaver, getter service.URLGetter) chi.Router {
+func newRootRouter(cfg *config.Config, saver service.URLSaverServ, getter service.URLGetterServ) chi.Router {
 	r := chi.NewRouter()
 
 	saveHandler := handler.NewSaveHandler(saver)
@@ -41,7 +47,7 @@ func newRootRouter(cfg *config.Config, saver service.URLSaver, getter service.UR
 	return r
 }
 
-func newAPIRouter(cfg *config.Config, saver service.URLSaver, getter service.URLGetter, deleter service.URLDelete) chi.Router {
+func newAPIRouter(cfg *config.Config, saver service.URLSaverServ, getter service.URLGetterServ, deleter service.URLDeleteServ) chi.Router {
 	r := chi.NewRouter()
 
 	saveHandler := handler.NewSaveHandler(saver)
@@ -61,7 +67,7 @@ func newAPIRouter(cfg *config.Config, saver service.URLSaver, getter service.URL
 	return r
 }
 
-func newPingRouter(pinger service.Pinger) chi.Router {
+func newPingRouter(pinger service.PingerServ) chi.Router {
 	r := chi.NewRouter()
 
 	if pinger != nil {

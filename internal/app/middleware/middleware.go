@@ -7,8 +7,10 @@ import (
 	"go.uber.org/zap"
 )
 
+// Log is the global logger
 var Log *zap.Logger = zap.NewNop()
 
+// Initialize sets up the global logger with the given log level
 func Initialize(level string) error {
 	lvl, err := zap.ParseAtomicLevel(level)
 	if err != nil {
@@ -38,19 +40,22 @@ type (
 	}
 )
 
+// Write writes the data to the underlying http.ResponseWriter
 func (r *loggingResponseWriter) Write(b []byte) (int, error) {
 	size, err := r.ResponseWriter.Write(b)
 	r.responseData.size += size
 	return size, err
 }
 
+// WriteHeader sets the HTTP status code for the response and stores it in responseData
 func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.ResponseWriter.WriteHeader(statusCode)
 	r.responseData.status = statusCode
 }
 
+// WithLogging wraps an HTTP handler to log incoming requests and their responses
 func WithLogging(h http.Handler) http.Handler {
-	return gzipHandle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return GzipHandle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
 		duration := time.Since(start)

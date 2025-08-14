@@ -12,11 +12,13 @@ type gzipWriter struct {
 	Writer io.Writer
 }
 
+// Write writes the data to the gzip stream, wrapping the original http.ResponseWriter
 func (w gzipWriter) Write(b []byte) (int, error) {
 	return w.Writer.Write(b)
 }
 
-func gzipHandle(h http.Handler) http.Handler {
+// GzipHandle wraps an HTTP handler to transparently handle gzip compression and decompression for requests and responses when supported.
+func GzipHandle(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Content-Type") != "application/json" && r.Header.Get("Content-Type") != "text/html" && r.Header.Get("Content-Type") != "application/x-gzip" {
 			h.ServeHTTP(w, r)

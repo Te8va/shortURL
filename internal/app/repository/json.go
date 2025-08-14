@@ -14,6 +14,7 @@ import (
 
 const length = 8
 
+// JSONRepository is a storage implementation that saves data in a JSON file
 type JSONRepository struct {
 	file  string
 	store map[string]URLData
@@ -21,12 +22,14 @@ type JSONRepository struct {
 	cfg   *config.Config
 }
 
+// URLData represents the structure for storing URL information
 type URLData struct {
 	UserID      int    `json:"user_id"`
 	OriginalURL string `json:"original_url"`
 	ShortURL    string `json:"short_url"`
 }
 
+// NewJSONRepository creates a new JSON repository and loads data from the file.
 func NewJSONRepository(filePath string, cfg *config.Config) (*JSONRepository, error) {
 	if filePath == "" {
 		return nil, fmt.Errorf("путь к файлу не задан")
@@ -45,6 +48,7 @@ func NewJSONRepository(filePath string, cfg *config.Config) (*JSONRepository, er
 	return repo, nil
 }
 
+// Save stores URL and returns its shortened version
 func (r *JSONRepository) Save(ctx context.Context, userID int, url string) (string, error) {
 	id := r.generateID()
 	shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
@@ -71,6 +75,7 @@ func (r *JSONRepository) Save(ctx context.Context, userID int, url string) (stri
 	return shortenedURL, nil
 }
 
+// Get returns the original URL by its shortened identifier
 func (r *JSONRepository) Get(ctx context.Context, id string) (string, bool, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -82,6 +87,7 @@ func (r *JSONRepository) Get(ctx context.Context, id string) (string, bool, bool
 	return url.OriginalURL, true, false
 }
 
+// SaveBatch stores multiple URLs in a single call.
 func (r *JSONRepository) SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error) {
 	result := make(map[string]string)
 
@@ -149,6 +155,7 @@ func (r *JSONRepository) loadFromFile() error {
 	return nil
 }
 
+// GetUserURLs returns all URLs belonging to a specific user
 func (r *JSONRepository) GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()

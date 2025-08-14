@@ -9,24 +9,27 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/golang-migrate/migrate/v4"
+	"go.uber.org/zap"
+
 	"github.com/Te8va/shortURL/internal/app/config"
 	"github.com/Te8va/shortURL/internal/app/repository"
 	"github.com/Te8va/shortURL/internal/app/router"
 	"github.com/Te8va/shortURL/internal/app/service"
-	"github.com/golang-migrate/migrate/v4"
-	"go.uber.org/zap"
 )
 
+// App represents the core application structure
 type App struct {
-	cfg    *config.Config
-	logger *zap.SugaredLogger
-	saver  service.URLSaver
-	getter service.URLGetter
-	pinger service.Pinger
-	deleter service.URLDelete
-	server *http.Server
+	cfg     *config.Config
+	logger  *zap.SugaredLogger
+	saver   service.URLSaverServ
+	getter  service.URLGetterServ
+	pinger  service.PingerServ
+	deleter service.URLDeleteServ
+	server  *http.Server
 }
 
+// NewApp creates a new App instance
 func NewApp() (*App, error) {
 	cfg := config.NewConfig()
 
@@ -59,56 +62,65 @@ func (a *App) initStorage() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if a.cfg.DatabaseDSN != "" {
-		a.logger.Infoln("Using PostgreSQL as storage")
-
-		m, err := migrate.New("file://migrations", a.cfg.DatabaseDSN)
-		if err != nil {
-			a.logger.Fatalw("Failed to initialize migrations", "error", err)
-		}
-
-		err = repository.ApplyMigrations(m)
-		if err != nil {
-			a.logger.Fatalw("Failed to apply migrations", "error", err)
-		}
-
-		pool, err := repository.GetPgxPool(ctx, a.cfg.DatabaseDSN)
-		if err != nil {
-			a.logger.Fatalw("Failed to create Postgres connection pool", "error", err)
-		}
-
-		repo, err := repository.NewURLRepository(pool, a.cfg)
-		if err != nil {
-			a.logger.Fatalw("Failed to initialize Postgres repository", "error", err)
-		}
-
-		a.saver = repo
-		a.getter = repo
-		a.pinger = repo
-		a.deleter = repo
-
-	} else if a.cfg.FileStoragePath != "" {
-		a.logger.Infoln("Using JSON file as storage:", a.cfg.FileStoragePath)
-
-		storage, err := repository.NewJSONRepository(a.cfg.FileStoragePath, a.cfg)
-		if err != nil {
-			a.logger.Fatalw("Failed to initialize JSON repository", "error", err)
-		}
-
-		a.saver = storage
-		a.getter = storage
-		a.pinger = nil
-		a.deleter = nil
-
-	} else {
-		a.logger.Infoln("Using in-memory storage")
-		storage := repository.NewMemoryRepository(a.cfg)
-
-		a.saver = storage
-		a.getter = storage
-		a.pinger = nil
-		a.deleter = nil
+	switch {
+	case a.cfg.DatabaseDSN != "":
+		return a.initPostgresStorage(ctx)
+	case a.cfg.FileStoragePath != "":
+		return a.initFileStorage()
+	default:
+		return a.initMemoryStorage()
 	}
+}
+
+func (a *App) initPostgresStorage(ctx context.Context) error {
+	a.logger.Infoln("Using PostgreSQL as storage")
+
+	m, err := migrate.New("file://migrations", a.cfg.DatabaseDSN)
+	if err != nil {
+		a.logger.Fatalw("Failed to initialize migrations", "error", err)
+	}
+
+	if err := repository.ApplyMigrations(m); err != nil {
+		a.logger.Fatalw("Failed to apply migrations", "error", err)
+	}
+
+	pool, err := repository.GetPgxPool(ctx, a.cfg.DatabaseDSN)
+	if err != nil {
+		a.logger.Fatalw("Failed to create Postgres connection pool", "error", err)
+	}
+
+	repo, err := repository.NewURLRepository(pool, a.cfg)
+	if err != nil {
+		a.logger.Fatalw("Failed to initialize Postgres repository", "error", err)
+	}
+
+	a.saver = repo
+	a.getter = repo
+	a.pinger = repo
+	a.deleter = repo
+
+	return nil
+}
+
+func (a *App) initFileStorage() error {
+	a.logger.Infoln("Using JSON file as storage:", a.cfg.FileStoragePath)
+
+	storage, err := repository.NewJSONRepository(a.cfg.FileStoragePath, a.cfg)
+	if err != nil {
+		a.logger.Fatalw("Failed to initialize JSON repository", "error", err)
+	}
+
+	a.saver = storage
+	a.getter = storage
+	return nil
+}
+
+func (a *App) initMemoryStorage() error {
+	a.logger.Infoln("Using in-memory storage")
+	storage := repository.NewMemoryRepository(a.cfg)
+
+	a.saver = storage
+	a.getter = storage
 	return nil
 }
 
@@ -121,6 +133,7 @@ func (a *App) initServer() {
 	}
 }
 
+// Run starts the HTTP server and listens for OS signals to gracefully shut down all resources before exiting
 func (a *App) Run() error {
 	defer func() {
 		if err := a.logger.Sync(); err != nil {

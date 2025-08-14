@@ -8,6 +8,7 @@ import (
 	"github.com/caarlos0/env/v6"
 )
 
+// Config holds application configuration parameters
 type Config struct {
 	ServerAddress    string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
 	BaseURL          string `env:"BASE_URL" envDefault:"http://localhost:8080"`
@@ -20,6 +21,7 @@ type Config struct {
 	JWTKey           string `env:"JWT_KEY"               envDefault:"supermegasecret"`
 }
 
+// NewConfig creates and returns a Config instance by parsing environment variables and command-line flags.
 func NewConfig() *Config {
 
 	cfg := Config{}
