@@ -68,7 +68,7 @@ func main() {
 	}
 
 	mychecks := []*analysis.Analyzer{
-		OsExitAnalyzer,
+		osExitAnalyzer,
 		asmdecl.Analyzer,
 		assign.Analyzer,
 		atomic.Analyzer,
