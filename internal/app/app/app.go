@@ -80,7 +80,7 @@ func (a *App) initPostgresStorage(ctx context.Context) error {
 		a.logger.Fatalw("Failed to initialize migrations", "error", err)
 	}
 
-	if err := repository.ApplyMigrations(m); err != nil {
+	if err = repository.ApplyMigrations(m); err != nil {
 		a.logger.Fatalw("Failed to apply migrations", "error", err)
 	}
 

@@ -118,7 +118,7 @@ func (u *SaveHandler) PostHandlerJSON(w http.ResponseWriter, r *http.Request) {
 		resp := domain.ShortenResponse{Result: id}
 		w.Header().Set(contentType, contentTypeApp)
 		w.WriteHeader(http.StatusConflict)
-		if err := json.NewEncoder(w).Encode(resp); err != nil {
+		if err = json.NewEncoder(w).Encode(resp); err != nil {
 			http.Error(w, "Failed to write response", http.StatusInternalServerError)
 			return
 		}
