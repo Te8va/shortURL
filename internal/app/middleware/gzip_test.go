@@ -78,11 +78,10 @@ func TestGzipHandle(t *testing.T) {
 
 			var body []byte
 			var err error
-			var gzr *gzip.Reader
 
 			if tt.wantGzipEncode {
 				require.Equal(t, "gzip", res.Header.Get("Content-Encoding"))
-				gzr, err = gzip.NewReader(res.Body)
+				gzr, err := gzip.NewReader(res.Body)
 				require.NoError(t, err)
 				body, err = io.ReadAll(gzr)
 				require.NoError(t, err)
