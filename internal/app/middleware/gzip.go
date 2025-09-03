@@ -20,39 +20,25 @@ func (w gzipWriter) Write(b []byte) (int, error) {
 // GzipHandle wraps an HTTP handler to transparently handle gzip compression and decompression for requests and responses when supported.
 func GzipHandle(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Content-Type") != "application/json" && r.Header.Get("Content-Type") != "text/html" && r.Header.Get("Content-Type") != "application/x-gzip" {
-			h.ServeHTTP(w, r)
-			return
-		}
-
 		if r.Header.Get("Content-Encoding") == "gzip" {
 			gz, err := gzip.NewReader(r.Body)
 			if err != nil {
-				http.Error(w, "Failed to decompress request", http.StatusInternalServerError)
+				http.Error(w, "Failed to decompress request", http.StatusBadRequest)
 				return
 			}
 			defer gz.Close()
-
-			r.Body = gz
-			r.Header.Set("Content-Type", "text/plain")
+			r.Body = io.NopCloser(gz)
 		}
 
-		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-			h.ServeHTTP(w, r)
+		if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			w.Header().Set("Content-Encoding", "gzip")
+			gz := gzip.NewWriter(w)
+			defer gz.Close()
+			gw := gzipWriter{ResponseWriter: w, Writer: gz}
+			h.ServeHTTP(gw, r)
 			return
 		}
 
-		gz, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
-		if err != nil {
-			if _, writeErr := io.WriteString(w, err.Error()); writeErr != nil {
-				http.Error(w, "Failed to write error message", http.StatusInternalServerError)
-			}
-			return
-		}
-
-		defer gz.Close()
-
-		w.Header().Set("Content-Encoding", "gzip")
-		h.ServeHTTP(gzipWriter{ResponseWriter: w, Writer: gz}, r)
+		h.ServeHTTP(w, r)
 	})
 }
