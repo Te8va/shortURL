@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/caarlos0/env/v6"
 )
@@ -19,6 +20,7 @@ type Config struct {
 	PostgresPort     int    `env:"POSTGRES_PORT"         envDefault:"5432"`
 	DatabaseDSN      string `env:"DATABASE_DSN"`
 	JWTKey           string `env:"JWT_KEY"               envDefault:"supermegasecret"`
+	EnableHTTPS      bool
 }
 
 // NewConfig creates and returns a Config instance by parsing environment variables and command-line flags.
@@ -33,6 +35,7 @@ func NewConfig() *Config {
 	baseURLFlag := flag.String("b", "", "Base URL for short links")
 	fileStorageFlag := flag.String("f", "", "Path to storage file")
 	databaseDSNFlag := flag.String("d", "", "PostgreSQL connection string")
+	httpsFlag := flag.Bool("s", false, "Enable HTTPS")
 
 	flag.Parse()
 
@@ -50,6 +53,13 @@ func NewConfig() *Config {
 		cfg.DatabaseDSN = dsnEnv
 	} else if *databaseDSNFlag != "" {
 		cfg.DatabaseDSN = *databaseDSNFlag
+	}
+
+	cfg.EnableHTTPS = *httpsFlag
+	if secureEnv, exists := os.LookupEnv("ENABLE_HTTPS"); exists || !cfg.EnableHTTPS {
+		if val, err := strconv.ParseBool(secureEnv); err == nil {
+			cfg.EnableHTTPS = val
+		}
 	}
 
 	return &cfg
