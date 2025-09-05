@@ -143,8 +143,15 @@ func (a *App) Run() error {
 
 	go func() {
 		a.logger.Infow("Server started", "addr", a.cfg.ServerAddress)
-		if err := a.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			a.logger.Fatalw("ListenAndServe failed", "error", err)
+
+		if a.cfg.EnableHTTPS {
+			if err := a.server.ListenAndServeTLS("cert.pem", "key.pem"); err != nil && err != http.ErrServerClosed {
+				a.logger.Fatalw("ListenAndServeTLS failed", "error", err)
+			}
+		} else {
+			if err := a.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				a.logger.Fatalw("ListenAndServe failed", "error", err)
+			}
 		}
 	}()
 
