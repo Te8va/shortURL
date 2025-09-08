@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"flag"
 	"log"
 	"os"
@@ -23,6 +24,29 @@ type Config struct {
 	EnableHTTPS      bool
 }
 
+// ConfigFile describes JSON configuration file format
+type ConfigFile struct {
+	ServerAddress   string `json:"server_address"`
+	BaseURL         string `json:"base_url"`
+	FileStoragePath string `json:"file_storage_path"`
+	DatabaseDSN     string `json:"database_dsn"`
+	EnableHTTPS     bool   `json:"enable_https"`
+}
+
+func loadFromFile(path string) (*ConfigFile, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var cfgFile ConfigFile
+	if err := json.NewDecoder(f).Decode(&cfgFile); err != nil {
+		return nil, err
+	}
+	return &cfgFile, nil
+}
+
 // NewConfig creates and returns a Config instance by parsing environment variables and command-line flags.
 func NewConfig() *Config {
 
@@ -36,8 +60,29 @@ func NewConfig() *Config {
 	fileStorageFlag := flag.String("f", "", "Path to storage file")
 	databaseDSNFlag := flag.String("d", "", "PostgreSQL connection string")
 	httpsFlag := flag.Bool("s", false, "Enable HTTPS")
+	configPathFlag := flag.String("c", "", "Path to config file (JSON)")
+	configPathFlagLong := flag.String("config", "", "Path to config file (JSON)")
 
 	flag.Parse()
+
+	configPath := ""
+	if *configPathFlag != "" {
+		configPath = *configPathFlag
+	} else if *configPathFlagLong != "" {
+		configPath = *configPathFlagLong
+	} else if envPath := os.Getenv("CONFIG"); envPath != "" {
+		configPath = envPath
+	}
+
+	if configPath != "" {
+		if cfgFile, err := loadFromFile(configPath); err == nil {
+			cfg.ServerAddress = cfgFile.ServerAddress
+			cfg.BaseURL = cfgFile.BaseURL
+			cfg.FileStoragePath = cfgFile.FileStoragePath
+			cfg.DatabaseDSN = cfgFile.DatabaseDSN
+			cfg.EnableHTTPS = cfgFile.EnableHTTPS
+		}
+	}
 
 	if *serverAddrFlag != "" {
 		cfg.ServerAddress = *serverAddrFlag
