@@ -18,7 +18,7 @@ func TestURLService_Save(t *testing.T) {
 
 	mockSaver := mocks.NewMockURLSaverServ(ctrl)
 
-	svc := service.NewURLService(mockSaver, nil, nil, nil)
+	svc := service.NewURLService(mockSaver, nil, nil, nil, nil)
 
 	tests := []struct {
 		name      string
@@ -76,7 +76,7 @@ func TestURLService_SaveBatch(t *testing.T) {
 
 	mockSaver := mocks.NewMockURLSaverServ(ctrl)
 
-	svc := service.NewURLService(mockSaver, nil, nil, nil)
+	svc := service.NewURLService(mockSaver, nil, nil, nil, nil)
 
 	batchInput := map[string]string{
 		"corr1": "https://example1.com",

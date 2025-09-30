@@ -13,7 +13,7 @@ type Pinger interface {
 	PingPg(ctx context.Context) error
 }
 
-// PingHandler handles requests for health checks.
+// PingHandler handles requests for health checks
 type PingHandler struct {
 	pinger Pinger
 }

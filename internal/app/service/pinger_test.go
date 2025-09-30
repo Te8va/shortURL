@@ -18,7 +18,7 @@ func TestURLService_PingPg(t *testing.T) {
 
 	mockPinger := mocks.NewMockPingerServ(ctrl)
 
-	svc := service.NewURLService(nil, nil, mockPinger, nil)
+	svc := service.NewURLService(nil, nil, mockPinger, nil, nil)
 
 	tests := []struct {
 		name      string
