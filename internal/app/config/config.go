@@ -88,7 +88,6 @@ func NewConfig() *Config {
 		}
 	}
 
-	
 	if *serverAddrFlag != "" {
 		cfg.ServerAddress = *serverAddrFlag
 	}

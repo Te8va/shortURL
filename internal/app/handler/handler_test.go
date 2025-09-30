@@ -406,7 +406,7 @@ func TestGetStatsHandler(t *testing.T) {
 			mockUsers: 25,
 			mockErr:   nil,
 			wantCode:  http.StatusOK,
-			wantBody:  `{"urls":150,"users":25}`+ "\n",
+			wantBody:  `{"urls":150,"users":25}` + "\n",
 		},
 		{
 			name:      "valid request with empty stats",
@@ -414,7 +414,7 @@ func TestGetStatsHandler(t *testing.T) {
 			mockUsers: 0,
 			mockErr:   nil,
 			wantCode:  http.StatusOK,
-			wantBody:  `{"urls":0,"users":0}`+ "\n",
+			wantBody:  `{"urls":0,"users":0}` + "\n",
 		},
 		{
 			name:      "request with service error",

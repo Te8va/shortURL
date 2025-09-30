@@ -15,7 +15,7 @@ type URLStats interface {
 	GetStats(ctx context.Context) (urlsCount int, usersCount int, err error)
 }
 
-// StatsResponse handles response format for statistics 
+// StatsResponse handles response format for statistics
 type StatsResponse struct {
 	URLs  int `json:"urls"`
 	Users int `json:"users"`
