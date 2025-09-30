@@ -1,0 +1,2653 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>shortener: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/Te8va/shortURL/cmd/shortener/main.go (0.0%)</option>
+				
+				<option value="file1">github.com/Te8va/shortURL/internal/app/app/app.go (0.0%)</option>
+				
+				<option value="file2">github.com/Te8va/shortURL/internal/app/config/config.go (0.0%)</option>
+				
+				<option value="file3">github.com/Te8va/shortURL/internal/app/handler/deletehandler.go (90.5%)</option>
+				
+				<option value="file4">github.com/Te8va/shortURL/internal/app/handler/gethandler.go (86.7%)</option>
+				
+				<option value="file5">github.com/Te8va/shortURL/internal/app/handler/mocks/url_delete_mock.gen.go (0.0%)</option>
+				
+				<option value="file6">github.com/Te8va/shortURL/internal/app/handler/mocks/url_getter_mock.gen.go (0.0%)</option>
+				
+				<option value="file7">github.com/Te8va/shortURL/internal/app/handler/mocks/url_pinger_mock.gen.go (0.0%)</option>
+				
+				<option value="file8">github.com/Te8va/shortURL/internal/app/handler/mocks/url_saver_mock.gen.go (0.0%)</option>
+				
+				<option value="file9">github.com/Te8va/shortURL/internal/app/handler/pinghandler.go (66.7%)</option>
+				
+				<option value="file10">github.com/Te8va/shortURL/internal/app/handler/savehandler.go (60.0%)</option>
+				
+				<option value="file11">github.com/Te8va/shortURL/internal/app/handler/stats.go (0.0%)</option>
+				
+				<option value="file12">github.com/Te8va/shortURL/internal/app/middleware/auth.go (82.9%)</option>
+				
+				<option value="file13">github.com/Te8va/shortURL/internal/app/middleware/gzip.go (88.2%)</option>
+				
+				<option value="file14">github.com/Te8va/shortURL/internal/app/middleware/middleware.go (91.3%)</option>
+				
+				<option value="file15">github.com/Te8va/shortURL/internal/app/middleware/subnet.go (100.0%)</option>
+				
+				<option value="file16">github.com/Te8va/shortURL/internal/app/repository/json.go (0.0%)</option>
+				
+				<option value="file17">github.com/Te8va/shortURL/internal/app/repository/memory.go (0.0%)</option>
+				
+				<option value="file18">github.com/Te8va/shortURL/internal/app/repository/migrate.go (100.0%)</option>
+				
+				<option value="file19">github.com/Te8va/shortURL/internal/app/repository/mocks/migrator_mock.gen.go (0.0%)</option>
+				
+				<option value="file20">github.com/Te8va/shortURL/internal/app/repository/postgres.go (0.0%)</option>
+				
+				<option value="file21">github.com/Te8va/shortURL/internal/app/repository/repository.go (0.0%)</option>
+				
+				<option value="file22">github.com/Te8va/shortURL/internal/app/router/router.go (0.0%)</option>
+				
+				<option value="file23">github.com/Te8va/shortURL/internal/app/service/deleter.go (100.0%)</option>
+				
+				<option value="file24">github.com/Te8va/shortURL/internal/app/service/getter.go (100.0%)</option>
+				
+				<option value="file25">github.com/Te8va/shortURL/internal/app/service/mocks/delete_mock.gen.go (0.0%)</option>
+				
+				<option value="file26">github.com/Te8va/shortURL/internal/app/service/mocks/getter_mock.gen.go (0.0%)</option>
+				
+				<option value="file27">github.com/Te8va/shortURL/internal/app/service/mocks/pinger_mock.gen.go (0.0%)</option>
+				
+				<option value="file28">github.com/Te8va/shortURL/internal/app/service/mocks/saver_mock.gen.go (0.0%)</option>
+				
+				<option value="file29">github.com/Te8va/shortURL/internal/app/service/mocks/stats_mock.gen.go (0.0%)</option>
+				
+				<option value="file30">github.com/Te8va/shortURL/internal/app/service/pinger.go (100.0%)</option>
+				
+				<option value="file31">github.com/Te8va/shortURL/internal/app/service/saver.go (100.0%)</option>
+				
+				<option value="file32">github.com/Te8va/shortURL/internal/app/service/stats.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "fmt"
+
+        "go.uber.org/zap"
+
+        "github.com/Te8va/shortURL/internal/app/app"
+)
+
+var (
+        buildVersion, buildDate, buildCommit string
+)
+
+func main() <span class="cov0" title="0">{
+        printGlobalVariable(buildVersion, "version")
+        printGlobalVariable(buildDate, "date")
+        printGlobalVariable(buildCommit, "commit")
+
+        logger, _ := zap.NewProduction()
+        sugar := logger.Sugar()
+        defer func() </span><span class="cov0" title="0">{
+                if err := logger.Sync(); err != nil </span><span class="cov0" title="0">{
+                        sugar.Errorw("Failed to sync logger", "error", err)
+                }</span>
+        }()
+
+        <span class="cov0" title="0">appInstance, err := app.NewApp()
+        if err != nil </span><span class="cov0" title="0">{
+                sugar.Fatalw("Ошибка инициализации приложения", "error", err)
+        }</span>
+
+        <span class="cov0" title="0">if err := appInstance.Run(); err != nil </span><span class="cov0" title="0">{
+                sugar.Fatalw("Ошибка во время работы приложения", "error", err)
+        }</span>
+}
+
+func printGlobalVariable(variable string, shortDescription string) <span class="cov0" title="0">{
+        if variable != "" </span><span class="cov0" title="0">{
+                fmt.Println("Build", shortDescription+":", variable)
+        }</span> else<span class="cov0" title="0"> {
+                fmt.Println("Build", shortDescription+": N/A")
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package app
+
+import (
+        "context"
+        "net/http"
+        "os"
+        "os/signal"
+        "sync"
+        "syscall"
+        "time"
+
+        "github.com/golang-migrate/migrate/v4"
+        "go.uber.org/zap"
+
+        "github.com/Te8va/shortURL/internal/app/config"
+        "github.com/Te8va/shortURL/internal/app/repository"
+        "github.com/Te8va/shortURL/internal/app/router"
+        "github.com/Te8va/shortURL/internal/app/service"
+)
+
+// App represents the core application structure
+type App struct {
+        cfg     *config.Config
+        logger  *zap.SugaredLogger
+        saver   service.URLSaverServ
+        getter  service.URLGetterServ
+        pinger  service.PingerServ
+        deleter service.URLDeleteServ
+        stat    service.URLStatsServ
+        server  *http.Server
+}
+
+// NewApp creates a new App instance
+func NewApp() (*App, error) <span class="cov0" title="0">{
+        cfg := config.NewConfig()
+
+        logger, err := zap.NewDevelopment()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">sugar := logger.Sugar()
+        defer func() </span><span class="cov0" title="0">{
+                if err := logger.Sync(); err != nil </span><span class="cov0" title="0">{
+                        sugar.Errorw("Failed to sync logger", "error", err)
+                }</span>
+        }()
+
+        <span class="cov0" title="0">app := &amp;App{
+                cfg:    cfg,
+                logger: sugar,
+        }
+
+        if err := app.initStorage(); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">app.initServer()
+        return app, nil</span>
+}
+
+func (a *App) initStorage() error <span class="cov0" title="0">{
+        ctx, cancel := context.WithCancel(context.Background())
+        defer cancel()
+
+        switch </span>{
+        case a.cfg.DatabaseDSN != "":<span class="cov0" title="0">
+                return a.initPostgresStorage(ctx)</span>
+        case a.cfg.FileStoragePath != "":<span class="cov0" title="0">
+                return a.initFileStorage()</span>
+        default:<span class="cov0" title="0">
+                return a.initMemoryStorage()</span>
+        }
+}
+
+func (a *App) initPostgresStorage(ctx context.Context) error <span class="cov0" title="0">{
+        a.logger.Infoln("Using PostgreSQL as storage")
+
+        m, err := migrate.New("file://migrations", a.cfg.DatabaseDSN)
+        if err != nil </span><span class="cov0" title="0">{
+                a.logger.Fatalw("Failed to initialize migrations", "error", err)
+        }</span>
+
+        <span class="cov0" title="0">if err := repository.ApplyMigrations(m); err != nil </span><span class="cov0" title="0">{
+                a.logger.Fatalw("Failed to apply migrations", "error", err)
+        }</span>
+
+        <span class="cov0" title="0">pool, err := repository.GetPgxPool(ctx, a.cfg.DatabaseDSN)
+        if err != nil </span><span class="cov0" title="0">{
+                a.logger.Fatalw("Failed to create Postgres connection pool", "error", err)
+        }</span>
+
+        <span class="cov0" title="0">repo, err := repository.NewURLRepository(pool, a.cfg)
+        if err != nil </span><span class="cov0" title="0">{
+                a.logger.Fatalw("Failed to initialize Postgres repository", "error", err)
+        }</span>
+
+        <span class="cov0" title="0">a.saver = repo
+        a.getter = repo
+        a.pinger = repo
+        a.deleter = repo
+        a.stat = repo
+
+        return nil</span>
+}
+
+func (a *App) initFileStorage() error <span class="cov0" title="0">{
+        a.logger.Infoln("Using JSON file as storage:", a.cfg.FileStoragePath)
+
+        storage, err := repository.NewJSONRepository(a.cfg.FileStoragePath, a.cfg)
+        if err != nil </span><span class="cov0" title="0">{
+                a.logger.Fatalw("Failed to initialize JSON repository", "error", err)
+        }</span>
+
+        <span class="cov0" title="0">a.saver = storage
+        a.getter = storage
+        return nil</span>
+}
+
+func (a *App) initMemoryStorage() error <span class="cov0" title="0">{
+        a.logger.Infoln("Using in-memory storage")
+        storage := repository.NewMemoryRepository(a.cfg)
+
+        a.saver = storage
+        a.getter = storage
+        return nil
+}</span>
+
+func (a *App) initServer() <span class="cov0" title="0">{
+        handler := router.NewRouter(a.cfg, a.saver, a.getter, a.pinger, a.deleter, a.stat)
+
+        a.server = &amp;http.Server{
+                Addr:    a.cfg.ServerAddress,
+                Handler: handler,
+        }
+}</span>
+
+// Run starts the HTTP server and listens for OS signals to gracefully shut down all resources before exiting
+func (a *App) Run() error <span class="cov0" title="0">{
+        defer func() </span><span class="cov0" title="0">{
+                if err := a.logger.Sync(); err != nil </span><span class="cov0" title="0">{
+                        a.logger.Errorw("Failed to sync logger", "error", err)
+                }</span>
+        }()
+
+        <span class="cov0" title="0">go func() </span><span class="cov0" title="0">{
+                a.logger.Infow("Server started", "addr", a.cfg.ServerAddress)
+
+                if a.cfg.EnableHTTPS </span><span class="cov0" title="0">{
+                        if err := a.server.ListenAndServeTLS("cert.pem", "key.pem"); err != nil &amp;&amp; err != http.ErrServerClosed </span><span class="cov0" title="0">{
+                                a.logger.Fatalw("ListenAndServeTLS failed", "error", err)
+                        }</span>
+                } else<span class="cov0" title="0"> {
+                        if err := a.server.ListenAndServe(); err != nil &amp;&amp; err != http.ErrServerClosed </span><span class="cov0" title="0">{
+                                a.logger.Fatalw("ListenAndServe failed", "error", err)
+                        }</span>
+                }
+        }()
+
+        <span class="cov0" title="0">quit := make(chan os.Signal, 1)
+        signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
+
+        &lt;-quit
+
+        a.logger.Infoln("Shutting down server...")
+
+        shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+        defer shutdownCancel()
+
+        if err := a.server.Shutdown(shutdownCtx); err != nil </span><span class="cov0" title="0">{
+                a.logger.Fatalw("Server shutdown failed", "error", err)
+        }</span>
+
+        <span class="cov0" title="0">var wg sync.WaitGroup
+        waitGroupChan := make(chan struct{})
+        go func() </span><span class="cov0" title="0">{
+                wg.Wait()
+                close(waitGroupChan)
+        }</span>()
+
+        <span class="cov0" title="0">select </span>{
+        case &lt;-waitGroupChan:<span class="cov0" title="0">
+                a.logger.Infoln("All goroutines finished cleanly")</span>
+        case &lt;-time.After(3 * time.Second):<span class="cov0" title="0">
+                a.logger.Warn("Some goroutines did not finish in time")</span>
+        }
+
+        <span class="cov0" title="0">a.logger.Infoln("Server shut down successfully")
+        return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package config
+
+import (
+        "encoding/json"
+        "flag"
+        "log"
+        "os"
+        "strconv"
+
+        "github.com/caarlos0/env/v6"
+)
+
+// Config holds application configuration parameters
+type Config struct {
+        ServerAddress    string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
+        BaseURL          string `env:"BASE_URL" envDefault:"http://localhost:8080"`
+        FileStoragePath  string `env:"FILE_STORAGE_PATH"`
+        PostgresUser     string `env:"POSTGRES_USER"         envDefault:"shortURL"`
+        PostgresPassword string `env:"POSTGRES_PASSWORD"     envDefault:"shortURL"`
+        PostgresDB       string `env:"POSTGRES_DB"     envDefault:"shortURL"`
+        PostgresPort     int    `env:"POSTGRES_PORT"         envDefault:"5432"`
+        DatabaseDSN      string `env:"DATABASE_DSN"`
+        JWTKey           string `env:"JWT_KEY"               envDefault:"supermegasecret"`
+        EnableHTTPS      bool
+        TrustedSubnet    string `env:"TRUSTED_SUBNET"`
+}
+
+// ConfigFile describes JSON configuration file format
+type ConfigFile struct {
+        ServerAddress   string `json:"server_address"`
+        BaseURL         string `json:"base_url"`
+        FileStoragePath string `json:"file_storage_path"`
+        DatabaseDSN     string `json:"database_dsn"`
+        EnableHTTPS     bool   `json:"enable_https"`
+        TrustedSubnet   string `json:"trusted_subnet"`
+}
+
+func loadFromFile(path string) (*ConfigFile, error) <span class="cov0" title="0">{
+        f, err := os.Open(path)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">defer f.Close()
+
+        var cfgFile ConfigFile
+        if err := json.NewDecoder(f).Decode(&amp;cfgFile); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return &amp;cfgFile, nil</span>
+}
+
+// NewConfig creates and returns a Config instance by parsing environment variables and command-line flags.
+func NewConfig() *Config <span class="cov0" title="0">{
+
+        cfg := Config{}
+        if err := env.Parse(&amp;cfg); err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Error parsing environment variables:%v", err)
+        }</span>
+
+        <span class="cov0" title="0">serverAddrFlag := flag.String("a", "", "Address to run HTTP server")
+        baseURLFlag := flag.String("b", "", "Base URL for short links")
+        fileStorageFlag := flag.String("f", "", "Path to storage file")
+        databaseDSNFlag := flag.String("d", "", "PostgreSQL connection string")
+        httpsFlag := flag.Bool("s", false, "Enable HTTPS")
+        configPathFlag := flag.String("c", "", "Path to config file (JSON)")
+        configPathFlagLong := flag.String("config", "", "Path to config file (JSON)")
+        trustedSubnetFlag := flag.String("t", "", "Trusted subnet for internal stats (CIDR notation)")
+
+        flag.Parse()
+
+        configPath := ""
+        if *configPathFlag != "" </span><span class="cov0" title="0">{
+                configPath = *configPathFlag
+        }</span> else<span class="cov0" title="0"> if *configPathFlagLong != "" </span><span class="cov0" title="0">{
+                configPath = *configPathFlagLong
+        }</span> else<span class="cov0" title="0"> if envPath := os.Getenv("CONFIG"); envPath != "" </span><span class="cov0" title="0">{
+                configPath = envPath
+        }</span>
+
+        <span class="cov0" title="0">if configPath != "" </span><span class="cov0" title="0">{
+                if cfgFile, err := loadFromFile(configPath); err == nil </span><span class="cov0" title="0">{
+                        cfg.ServerAddress = cfgFile.ServerAddress
+                        cfg.BaseURL = cfgFile.BaseURL
+                        cfg.FileStoragePath = cfgFile.FileStoragePath
+                        cfg.DatabaseDSN = cfgFile.DatabaseDSN
+                        cfg.EnableHTTPS = cfgFile.EnableHTTPS
+                        cfg.TrustedSubnet = cfgFile.TrustedSubnet
+                }</span>
+        }
+
+        
+        <span class="cov0" title="0">if *serverAddrFlag != "" </span><span class="cov0" title="0">{
+                cfg.ServerAddress = *serverAddrFlag
+        }</span>
+        <span class="cov0" title="0">if *baseURLFlag != "" </span><span class="cov0" title="0">{
+                cfg.BaseURL = *baseURLFlag
+        }</span>
+        <span class="cov0" title="0">if *fileStorageFlag != "" </span><span class="cov0" title="0">{
+                cfg.FileStoragePath = *fileStorageFlag
+        }</span>
+        <span class="cov0" title="0">if *trustedSubnetFlag != "" </span><span class="cov0" title="0">{
+                cfg.TrustedSubnet = *trustedSubnetFlag
+        }</span>
+
+        <span class="cov0" title="0">if dsnEnv, exists := os.LookupEnv("DATABASE_DSN"); exists &amp;&amp; dsnEnv != "" </span><span class="cov0" title="0">{
+                cfg.DatabaseDSN = dsnEnv
+        }</span> else<span class="cov0" title="0"> if *databaseDSNFlag != "" </span><span class="cov0" title="0">{
+                cfg.DatabaseDSN = *databaseDSNFlag
+        }</span>
+
+        <span class="cov0" title="0">if trustedSubnetEnv, exists := os.LookupEnv("TRUSTED_SUBNET"); exists &amp;&amp; trustedSubnetEnv != "" &amp;&amp; cfg.TrustedSubnet == "" </span><span class="cov0" title="0">{
+                cfg.TrustedSubnet = trustedSubnetEnv
+        }</span>
+
+        <span class="cov0" title="0">cfg.EnableHTTPS = *httpsFlag
+        if secureEnv, exists := os.LookupEnv("ENABLE_HTTPS"); exists || !cfg.EnableHTTPS </span><span class="cov0" title="0">{
+                if val, err := strconv.ParseBool(secureEnv); err == nil </span><span class="cov0" title="0">{
+                        cfg.EnableHTTPS = val
+                }</span>
+        }
+
+        <span class="cov0" title="0">return &amp;cfg</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">// package handler contains logic for deleting user-specific URLs.
+package handler
+
+import (
+        "context"
+        "encoding/json"
+        "fmt"
+        "net/http"
+
+        "github.com/Te8va/shortURL/internal/app/config"
+        "github.com/Te8va/shortURL/internal/app/domain"
+)
+
+// URLDelete defines an interface for deleting user URLs
+//
+//go:generate mockgen -source=deletehandler.go -destination=mocks/url_delete_mock.gen.go -package=mocks
+type URLDelete interface {
+        DeleteUserURLs(ctx context.Context, ids []string, userID int) error
+}
+
+// DeleteHandler handles requests for deleting user URLs
+type DeleteHandler struct {
+        deleter URLDelete
+        cfg     *config.Config
+}
+
+// NewDeleteHandler creates a new instance of DeleteHandler.
+func NewDeleteHandler(deleter URLDelete, cfg *config.Config) *DeleteHandler <span class="cov8" title="1">{
+        return &amp;DeleteHandler{deleter: deleter, cfg: cfg}
+}</span>
+
+// DeleteUserURLsHandler processes requests to delete user URLs.
+func (u *DeleteHandler) DeleteUserURLsHandler(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        userID, ok := r.Context().Value(domain.UserIDKey).(int)
+        if !ok </span><span class="cov8" title="1">{
+                http.Error(w, "Unauthorized", http.StatusUnauthorized)
+                return
+        }</span>
+
+        <span class="cov8" title="1">var ids []string
+        if err := json.NewDecoder(r.Body).Decode(&amp;ids); err != nil </span><span class="cov8" title="1">{
+                http.Error(w, "Invalid JSON", http.StatusBadRequest)
+                return
+        }</span>
+
+        <span class="cov8" title="1">if len(ids) == 0 </span><span class="cov8" title="1">{
+                http.Error(w, "Empty list of URLs", http.StatusBadRequest)
+                return
+        }</span>
+
+        <span class="cov8" title="1">var fullURLs []string
+        for _, id := range ids </span><span class="cov8" title="1">{
+                fullURLs = append(fullURLs, fmt.Sprintf("%s/%s", u.cfg.BaseURL, id))
+        }</span>
+
+        <span class="cov8" title="1">go func(fullURLs []string, userID int) </span><span class="cov8" title="1">{
+                err := u.deleter.DeleteUserURLs(context.Background(), fullURLs, userID)
+                if err != nil </span><span class="cov0" title="0">{
+                        http.Error(w, "Failed to delete URL", http.StatusBadRequest)
+                        return
+                }</span>
+        }(fullURLs, userID)
+
+        <span class="cov8" title="1">w.WriteHeader(http.StatusAccepted)</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">// package handler contains logic for retrieving original URLs and user-specific URL.
+
+package handler
+
+import (
+        "context"
+        "encoding/json"
+        "fmt"
+        "log"
+        "net/http"
+        "strings"
+
+        "github.com/Te8va/shortURL/internal/app/config"
+        "github.com/Te8va/shortURL/internal/app/domain"
+)
+
+// URLGetter defines an interface for retrieving URLs.
+//
+//go:generate mockgen -source=gethandler.go -destination=mocks/url_getter_mock.gen.go -package=mocks
+type URLGetter interface {
+        Get(ctx context.Context, id string) (string, bool, bool)
+        GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error)
+}
+
+// GetterHandler handles requests for retrieving URLs.
+type GetterHandler struct {
+        getter URLGetter
+        cfg    *config.Config
+}
+
+// NewGetterHandler creates a new instance of GetterHandler.
+func NewGetterHandler(getter URLGetter, cfg *config.Config) *GetterHandler <span class="cov8" title="1">{
+        return &amp;GetterHandler{getter: getter, cfg: cfg}
+}</span>
+
+// GetHandler processes request to redirect to the original URL by short ID.
+func (u *GetterHandler) GetHandler(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        id := strings.TrimPrefix(r.URL.Path, "/")
+        if id == "" </span><span class="cov0" title="0">{
+                http.Error(w, "Missing or invalid ID", http.StatusBadRequest)
+                return
+        }</span>
+
+        <span class="cov8" title="1">id = fmt.Sprintf("%s/%s", u.cfg.BaseURL, id)
+        originalURL, exists, isDeleted := u.getter.Get(r.Context(), id)
+        if !exists </span><span class="cov8" title="1">{
+                http.Error(w, "URL not found", http.StatusNotFound)
+                return
+        }</span>
+
+        <span class="cov8" title="1">if isDeleted </span><span class="cov0" title="0">{
+                http.Error(w, "URL has been deleted", http.StatusGone)
+                return
+        }</span>
+
+        <span class="cov8" title="1">log.Printf("Redirecting ID %s to URL: %s", id, originalURL)
+        w.Header().Set("Location", originalURL)
+        w.WriteHeader(http.StatusTemporaryRedirect)</span>
+}
+
+// GetUserURLsHandler a request to retrieve all URLs created user.
+func (u *GetterHandler) GetUserURLsHandler(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        userID, ok := r.Context().Value(domain.UserIDKey).(int)
+        if !ok </span><span class="cov8" title="1">{
+                http.Error(w, "Unauthorized", http.StatusUnauthorized)
+                return
+        }</span>
+
+        <span class="cov8" title="1">urls, err := u.getter.GetUserURLs(r.Context(), userID)
+        if err != nil </span><span class="cov8" title="1">{
+                http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+                return
+        }</span>
+
+        <span class="cov8" title="1">if urls == nil </span><span class="cov8" title="1">{
+                w.WriteHeader(http.StatusNoContent)
+                return
+        }</span>
+
+        <span class="cov8" title="1">w.Header().Set(contentType, contentTypeApp)
+        w.WriteHeader(http.StatusOK)
+        json.NewEncoder(w).Encode(urls)</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">// Code generated by MockGen. DO NOT EDIT.
+// Source: deletehandler.go
+
+// Package mocks is a generated GoMock package.
+package mocks
+
+import (
+        context "context"
+        reflect "reflect"
+
+        gomock "github.com/golang/mock/gomock"
+)
+
+// MockURLDelete is a mock of URLDelete interface.
+type MockURLDelete struct {
+        ctrl     *gomock.Controller
+        recorder *MockURLDeleteMockRecorder
+}
+
+// MockURLDeleteMockRecorder is the mock recorder for MockURLDelete.
+type MockURLDeleteMockRecorder struct {
+        mock *MockURLDelete
+}
+
+// NewMockURLDelete creates a new mock instance.
+func NewMockURLDelete(ctrl *gomock.Controller) *MockURLDelete <span class="cov0" title="0">{
+        mock := &amp;MockURLDelete{ctrl: ctrl}
+        mock.recorder = &amp;MockURLDeleteMockRecorder{mock}
+        return mock
+}</span>
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockURLDelete) EXPECT() *MockURLDeleteMockRecorder <span class="cov0" title="0">{
+        return m.recorder
+}</span>
+
+// DeleteUserURLs mocks base method.
+func (m *MockURLDelete) DeleteUserURLs(ctx context.Context, ids []string, userID int) error <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "DeleteUserURLs", ctx, ids, userID)
+        ret0, _ := ret[0].(error)
+        return ret0
+}</span>
+
+// DeleteUserURLs indicates an expected call of DeleteUserURLs.
+func (mr *MockURLDeleteMockRecorder) DeleteUserURLs(ctx, ids, userID interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserURLs", reflect.TypeOf((*MockURLDelete)(nil).DeleteUserURLs), ctx, ids, userID)
+}</span>
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">// Code generated by MockGen. DO NOT EDIT.
+// Source: gethandler.go
+
+// Package mocks is a generated GoMock package.
+package mocks
+
+import (
+        context "context"
+        reflect "reflect"
+
+        gomock "github.com/golang/mock/gomock"
+)
+
+// MockURLGetter is a mock of URLGetter interface.
+type MockURLGetter struct {
+        ctrl     *gomock.Controller
+        recorder *MockURLGetterMockRecorder
+}
+
+// MockURLGetterMockRecorder is the mock recorder for MockURLGetter.
+type MockURLGetterMockRecorder struct {
+        mock *MockURLGetter
+}
+
+// NewMockURLGetter creates a new mock instance.
+func NewMockURLGetter(ctrl *gomock.Controller) *MockURLGetter <span class="cov0" title="0">{
+        mock := &amp;MockURLGetter{ctrl: ctrl}
+        mock.recorder = &amp;MockURLGetterMockRecorder{mock}
+        return mock
+}</span>
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockURLGetter) EXPECT() *MockURLGetterMockRecorder <span class="cov0" title="0">{
+        return m.recorder
+}</span>
+
+// Get mocks base method.
+func (m *MockURLGetter) Get(ctx context.Context, id string) (string, bool, bool) <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "Get", ctx, id)
+        ret0, _ := ret[0].(string)
+        ret1, _ := ret[1].(bool)
+        ret2, _ := ret[2].(bool)
+        return ret0, ret1, ret2
+}</span>
+
+// Get indicates an expected call of Get.
+func (mr *MockURLGetterMockRecorder) Get(ctx, id interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockURLGetter)(nil).Get), ctx, id)
+}</span>
+
+// GetUserURLs mocks base method.
+func (m *MockURLGetter) GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error) <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "GetUserURLs", ctx, userID)
+        ret0, _ := ret[0].([]map[string]string)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}</span>
+
+// GetUserURLs indicates an expected call of GetUserURLs.
+func (mr *MockURLGetterMockRecorder) GetUserURLs(ctx, userID interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserURLs", reflect.TypeOf((*MockURLGetter)(nil).GetUserURLs), ctx, userID)
+}</span>
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">// Code generated by MockGen. DO NOT EDIT.
+// Source: pinghandler.go
+
+// Package mocks is a generated GoMock package.
+package mocks
+
+import (
+        context "context"
+        reflect "reflect"
+
+        gomock "github.com/golang/mock/gomock"
+)
+
+// MockPinger is a mock of Pinger interface.
+type MockPinger struct {
+        ctrl     *gomock.Controller
+        recorder *MockPingerMockRecorder
+}
+
+// MockPingerMockRecorder is the mock recorder for MockPinger.
+type MockPingerMockRecorder struct {
+        mock *MockPinger
+}
+
+// NewMockPinger creates a new mock instance.
+func NewMockPinger(ctrl *gomock.Controller) *MockPinger <span class="cov0" title="0">{
+        mock := &amp;MockPinger{ctrl: ctrl}
+        mock.recorder = &amp;MockPingerMockRecorder{mock}
+        return mock
+}</span>
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockPinger) EXPECT() *MockPingerMockRecorder <span class="cov0" title="0">{
+        return m.recorder
+}</span>
+
+// PingPg mocks base method.
+func (m *MockPinger) PingPg(ctx context.Context) error <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "PingPg", ctx)
+        ret0, _ := ret[0].(error)
+        return ret0
+}</span>
+
+// PingPg indicates an expected call of PingPg.
+func (mr *MockPingerMockRecorder) PingPg(ctx interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PingPg", reflect.TypeOf((*MockPinger)(nil).PingPg), ctx)
+}</span>
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">// Code generated by MockGen. DO NOT EDIT.
+// Source: savehandler.go
+
+// Package mocks is a generated GoMock package.
+package mocks
+
+import (
+        context "context"
+        reflect "reflect"
+
+        gomock "github.com/golang/mock/gomock"
+)
+
+// MockURLSaver is a mock of URLSaver interface.
+type MockURLSaver struct {
+        ctrl     *gomock.Controller
+        recorder *MockURLSaverMockRecorder
+}
+
+// MockURLSaverMockRecorder is the mock recorder for MockURLSaver.
+type MockURLSaverMockRecorder struct {
+        mock *MockURLSaver
+}
+
+// NewMockURLSaver creates a new mock instance.
+func NewMockURLSaver(ctrl *gomock.Controller) *MockURLSaver <span class="cov0" title="0">{
+        mock := &amp;MockURLSaver{ctrl: ctrl}
+        mock.recorder = &amp;MockURLSaverMockRecorder{mock}
+        return mock
+}</span>
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockURLSaver) EXPECT() *MockURLSaverMockRecorder <span class="cov0" title="0">{
+        return m.recorder
+}</span>
+
+// Save mocks base method.
+func (m *MockURLSaver) Save(ctx context.Context, userID int, url string) (string, error) <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "Save", ctx, userID, url)
+        ret0, _ := ret[0].(string)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}</span>
+
+// Save indicates an expected call of Save.
+func (mr *MockURLSaverMockRecorder) Save(ctx, userID, url interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockURLSaver)(nil).Save), ctx, userID, url)
+}</span>
+
+// SaveBatch mocks base method.
+func (m *MockURLSaver) SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error) <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "SaveBatch", ctx, userID, urls)
+        ret0, _ := ret[0].(map[string]string)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}</span>
+
+// SaveBatch indicates an expected call of SaveBatch.
+func (mr *MockURLSaverMockRecorder) SaveBatch(ctx, userID, urls interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveBatch", reflect.TypeOf((*MockURLSaver)(nil).SaveBatch), ctx, userID, urls)
+}</span>
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">// package handler contains health check handler for database connection.
+package handler
+
+import (
+        "context"
+        "net/http"
+)
+
+// Pinger defines an interface for health check for database connection.
+//
+//go:generate mockgen -source=pinghandler.go -destination=mocks/url_pinger_mock.gen.go -package=mocks
+type Pinger interface {
+        PingPg(ctx context.Context) error
+}
+
+// PingHandler handles requests for health checks.
+type PingHandler struct {
+        pinger Pinger
+}
+
+// NewPingHandler creates new instance of PingHandler
+func NewPingHandler(pinger Pinger) *PingHandler <span class="cov8" title="1">{
+        return &amp;PingHandler{pinger: pinger}
+}</span>
+
+// PingHandler processes request to health check of database connection.
+func (u *PingHandler) PingHandler(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        err := u.pinger.PingPg(r.Context())
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Database connection failed", http.StatusInternalServerError)
+                return
+        }</span>
+        <span class="cov8" title="1">w.WriteHeader(http.StatusOK)</span>
+}
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">// package handler contains handlers for saving new URLs, including single and batch operations.
+package handler
+
+import (
+        "context"
+        "encoding/json"
+        "errors"
+        "io"
+        "net/http"
+        "net/url"
+        "strings"
+        "time"
+
+        "github.com/Te8va/shortURL/internal/app/domain"
+        appErrors "github.com/Te8va/shortURL/internal/app/errors"
+)
+
+const (
+        length          = 8
+        contentType     = "Content-Type"
+        contentTypeText = "text/plain"
+        contentTypeApp  = "application/json"
+)
+
+// URLSaver defines an interface for saving URLs.
+//
+//go:generate mockgen -source=savehandler.go -destination=mocks/url_saver_mock.gen.go -package=mocks
+type URLSaver interface {
+        Save(ctx context.Context, userID int, url string) (string, error)
+        SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error)
+}
+
+// SaveHandler handles requests for saving URLs.
+type SaveHandler struct {
+        saver URLSaver
+}
+
+// NewSaveHandler creates a new instance of SaveHandler.
+func NewSaveHandler(saver URLSaver) *SaveHandler <span class="cov8" title="1">{
+        return &amp;SaveHandler{saver: saver}
+}</span>
+
+// PostHandler processes requests to save URL.
+func (u *SaveHandler) PostHandler(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        if !strings.HasPrefix(r.Header.Get(contentType), contentTypeText) </span><span class="cov8" title="1">{
+                http.Error(w, "Content-Type must be text/plain", http.StatusBadRequest)
+                return
+        }</span>
+
+        <span class="cov8" title="1">userID, _ := r.Context().Value(domain.UserIDKey).(int)
+
+        originalURLBytes, err := io.ReadAll(r.Body)
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Failed to read request body", http.StatusBadRequest)
+                return
+        }</span>
+
+        <span class="cov8" title="1">originalURL := string(originalURLBytes)
+        if originalURL == "" </span><span class="cov8" title="1">{
+                http.Error(w, "Empty URL", http.StatusBadRequest)
+                return
+        }</span>
+
+        <span class="cov8" title="1">_, err = url.ParseRequestURI(originalURL)
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Invalid URL format", http.StatusBadRequest)
+                return
+        }</span>
+
+        <span class="cov8" title="1">ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+        defer cancel()
+
+        id, err := u.saver.Save(ctx, userID, originalURL)
+        if err != nil </span><span class="cov0" title="0">{
+                if !errors.Is(err, appErrors.ErrURLExists) </span><span class="cov0" title="0">{
+                        http.Error(w, "Failed to save URL", http.StatusBadRequest)
+                        return
+                }</span>
+                <span class="cov0" title="0">w.Header().Set(contentType, contentTypeText)
+                w.WriteHeader(http.StatusConflict)
+                if _, err := w.Write([]byte(id)); err != nil </span><span class="cov0" title="0">{
+                        http.Error(w, "Failed to write response", http.StatusInternalServerError)
+                }</span>
+                <span class="cov0" title="0">return</span>
+        }
+
+        <span class="cov8" title="1">w.Header().Set(contentType, contentTypeText)
+        w.WriteHeader(http.StatusCreated)
+        if _, err := w.Write([]byte(id)); err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Failed to write response", http.StatusBadRequest)
+                return
+        }</span>
+}
+
+// PostHandlerJSON processes JSON-formatted POST requests to save URL.
+func (u *SaveHandler) PostHandlerJSON(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        if !strings.HasPrefix(r.Header.Get(contentType), contentTypeApp) </span><span class="cov8" title="1">{
+                http.Error(w, "Content-Type must be application/json", http.StatusBadRequest)
+                return
+        }</span>
+
+        <span class="cov8" title="1">userID, _ := r.Context().Value(domain.UserIDKey).(int)
+
+        var req domain.ShortenRequest
+        if err := json.NewDecoder(r.Body).Decode(&amp;req); err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Invalid JSON", http.StatusBadRequest)
+                return
+        }</span>
+
+        <span class="cov8" title="1">if _, err := url.ParseRequestURI(req.URL); err != nil </span><span class="cov8" title="1">{
+                http.Error(w, "Invalid URL format", http.StatusBadRequest)
+                return
+        }</span>
+
+        <span class="cov8" title="1">id, err := u.saver.Save(r.Context(), userID, req.URL)
+
+        if errors.Is(err, appErrors.ErrURLExists) </span><span class="cov0" title="0">{
+                resp := domain.ShortenResponse{Result: id}
+                w.Header().Set(contentType, contentTypeApp)
+                w.WriteHeader(http.StatusConflict)
+                if err := json.NewEncoder(w).Encode(resp); err != nil </span><span class="cov0" title="0">{
+                        http.Error(w, "Failed to write response", http.StatusInternalServerError)
+                        return
+                }</span>
+                <span class="cov0" title="0">return</span>
+        } else<span class="cov8" title="1"> if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Failed to save URL", http.StatusInternalServerError)
+                return
+        }</span>
+
+        <span class="cov8" title="1">resp := domain.ShortenResponse{Result: id}
+
+        w.Header().Set(contentType, contentTypeApp)
+        w.WriteHeader(http.StatusCreated)
+        if err := json.NewEncoder(w).Encode(resp); err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Failed to write response", http.StatusInternalServerError)
+                return
+        }</span>
+}
+
+// BatchRequest represents an individual request item in a batch of URLs to shorten
+type BatchRequest struct {
+        CorrelationID string `json:"correlation_id"`
+        OriginalURL   string `json:"original_url"`
+}
+
+// BatchResponse represents a shortened URL response for a single batch item.
+type BatchResponse struct {
+        CorrelationID string `json:"correlation_id"`
+        ShortURL      string `json:"short_url"`
+}
+
+// PostHandlerBatch processes batch URL saving requests in JSON format.
+func (u *SaveHandler) PostHandlerBatch(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        userID, _ := r.Context().Value(domain.UserIDKey).(int)
+
+        var batchReq []BatchRequest
+        if err := json.NewDecoder(r.Body).Decode(&amp;batchReq); err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Некорректный JSON", http.StatusBadRequest)
+                return
+        }</span>
+
+        <span class="cov8" title="1">if len(batchReq) == 0 </span><span class="cov0" title="0">{
+                http.Error(w, "Пустой список URL", http.StatusBadRequest)
+                return
+        }</span>
+
+        <span class="cov8" title="1">urlMap := make(map[string]string)
+        for _, req := range batchReq </span><span class="cov8" title="1">{
+                id, err := u.saver.Save(r.Context(), userID, req.OriginalURL)
+                if err != nil </span><span class="cov0" title="0">{
+                        http.Error(w, "Ошибка сохранения URL", http.StatusInternalServerError)
+                        return
+                }</span>
+                <span class="cov8" title="1">urlMap[req.CorrelationID] = id</span>
+        }
+
+        <span class="cov8" title="1">var batchResp []BatchResponse
+        for _, req := range batchReq </span><span class="cov8" title="1">{
+                batchResp = append(batchResp, BatchResponse{
+                        CorrelationID: req.CorrelationID,
+                        ShortURL:      urlMap[req.CorrelationID],
+                })
+        }</span>
+
+        <span class="cov8" title="1">w.Header().Set(contentType, contentTypeApp)
+        w.WriteHeader(http.StatusCreated)
+        if err := json.NewEncoder(w).Encode(batchResp); err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Ошибка записи ответа", http.StatusInternalServerError)
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">package handler
+
+import (
+        "context"
+        "encoding/json"
+        "net/http"
+
+        "github.com/Te8va/shortURL/internal/app/config"
+)
+
+// StatsService defines an interface for retrieving service statistics
+type URLStats interface {
+        GetStats(ctx context.Context) (urlsCount int, usersCount int, err error)
+}
+
+// StatsResponse represents the response format for statistics endpoint
+type StatsResponse struct {
+        URLs  int `json:"urls"`
+        Users int `json:"users"`
+}
+
+// StatsHandler handles requests for service statistics
+type StatsHandler struct {
+        stat URLStats
+        cfg  *config.Config
+}
+
+// NewStatsHandler creates a new instance of StatsHandler
+func NewStatsHandler(stat URLStats, cfg *config.Config) *StatsHandler <span class="cov0" title="0">{
+        return &amp;StatsHandler{
+                stat: stat,
+                cfg:  cfg,
+        }
+}</span>
+
+// GetStatsHandler processes GET requests to retrieve service statistics
+func (h *StatsHandler) GetStatsHandler(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        urlsCount, usersCount, err := h.stat.GetStats(r.Context())
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Failed to get stats", http.StatusInternalServerError)
+                return
+        }</span>
+
+        <span class="cov0" title="0">response := StatsResponse{
+                URLs:  urlsCount,
+                Users: usersCount,
+        }
+
+        w.Header().Set(contentType, contentTypeText)
+        w.WriteHeader(http.StatusOK)
+
+        if err := json.NewEncoder(w).Encode(response); err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Failed to write response", http.StatusInternalServerError)
+                return
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file12" style="display: none">package middleware
+
+import (
+        "context"
+        "crypto/rand"
+        "fmt"
+        "log"
+        "math/big"
+        "net/http"
+
+        "github.com/golang-jwt/jwt/v4"
+
+        "github.com/Te8va/shortURL/internal/app/domain"
+)
+
+// Claims defines the JWT claims containing the user ID
+type Claims struct {
+        UserID int `json:"user_id"`
+        jwt.RegisteredClaims
+}
+
+// GenerateToken creates a signed JWT containing a random user ID
+func GenerateToken(secretKey string) (string, int, error) <span class="cov8" title="1">{
+        id, err := rand.Int(rand.Reader, big.NewInt(1000000))
+        if err != nil </span><span class="cov0" title="0">{
+                return "", 0, fmt.Errorf("GenerateToken: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">claims := Claims{
+                UserID: int(id.Int64()),
+        }
+
+        token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+        tokenString, err := token.SignedString([]byte(secretKey))
+        if err != nil </span><span class="cov0" title="0">{
+                return "", 0, fmt.Errorf("GenerateToken: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return tokenString, claims.UserID, nil</span>
+}
+
+func getUserIDFromCookie(r *http.Request, secretKey string) (int, bool) <span class="cov8" title="1">{
+        cookie, err := r.Cookie("auth")
+        if err != nil </span><span class="cov8" title="1">{
+                return 0, false
+        }</span>
+
+        <span class="cov8" title="1">token, err := jwt.ParseWithClaims(cookie.Value, &amp;Claims{}, func(t *jwt.Token) (interface{}, error) </span><span class="cov8" title="1">{
+                if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("unexpected signing method")
+                }</span>
+                <span class="cov8" title="1">return []byte(secretKey), nil</span>
+        })
+
+        <span class="cov8" title="1">if err != nil </span><span class="cov8" title="1">{
+                log.Println("JWT parsing error:", err)
+                return 0, false
+        }</span>
+
+        <span class="cov8" title="1">claims, ok := token.Claims.(*Claims)
+        if !ok || !token.Valid </span><span class="cov0" title="0">{
+                return 0, false
+        }</span>
+
+        <span class="cov8" title="1">return claims.UserID, true</span>
+}
+
+// AuthMiddleware is an HTTP middleware that ensures the request has a valid user authentication cookie. If absent, it issues a new token and sets the cookie
+func AuthMiddleware(secretKey string) func(http.Handler) http.Handler <span class="cov8" title="1">{
+        return func(next http.Handler) http.Handler </span><span class="cov8" title="1">{
+                return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) </span><span class="cov8" title="1">{
+                        userID, valid := getUserIDFromCookie(r, secretKey)
+
+                        if !valid </span><span class="cov8" title="1">{
+                                tokenString, newUserID, err := GenerateToken(secretKey)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+                                        return
+                                }</span>
+
+                                <span class="cov8" title="1">http.SetCookie(w, &amp;http.Cookie{
+                                        Name:  "auth",
+                                        Value: tokenString,
+                                        Path:  "/",
+                                })
+
+                                userID = newUserID</span>
+                        }
+
+                        <span class="cov8" title="1">ctx := context.WithValue(r.Context(), domain.UserIDKey, userID)
+                        next.ServeHTTP(w, r.WithContext(ctx))</span>
+                })
+        }
+}
+</pre>
+		
+		<pre class="file" id="file13" style="display: none">package middleware
+
+import (
+        "compress/gzip"
+        "io"
+        "net/http"
+        "strings"
+)
+
+type gzipWriter struct {
+        http.ResponseWriter
+        Writer io.Writer
+}
+
+// Write writes the data to the gzip stream, wrapping the original http.ResponseWriter
+func (w gzipWriter) Write(b []byte) (int, error) <span class="cov8" title="1">{
+        return w.Writer.Write(b)
+}</span>
+
+// GzipHandle wraps an HTTP handler to transparently handle gzip compression and decompression for requests and responses when supported.
+func GzipHandle(h http.Handler) http.Handler <span class="cov8" title="1">{
+        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) </span><span class="cov8" title="1">{
+                if r.Header.Get("Content-Encoding") == "gzip" </span><span class="cov8" title="1">{
+                        gz, err := gzip.NewReader(r.Body)
+                        if err != nil </span><span class="cov0" title="0">{
+                                http.Error(w, "Failed to decompress request", http.StatusBadRequest)
+                                return
+                        }</span>
+                        <span class="cov8" title="1">defer gz.Close()
+                        r.Body = io.NopCloser(gz)</span>
+                }
+
+                <span class="cov8" title="1">if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") </span><span class="cov8" title="1">{
+                        w.Header().Set("Content-Encoding", "gzip")
+                        gz := gzip.NewWriter(w)
+                        defer gz.Close()
+                        gw := gzipWriter{ResponseWriter: w, Writer: gz}
+                        h.ServeHTTP(gw, r)
+                        return
+                }</span>
+
+                <span class="cov8" title="1">h.ServeHTTP(w, r)</span>
+        })
+}
+</pre>
+		
+		<pre class="file" id="file14" style="display: none">package middleware
+
+import (
+        "net/http"
+        "time"
+
+        "go.uber.org/zap"
+)
+
+// Log is the global logger
+var Log *zap.Logger = zap.NewNop()
+
+// Initialize sets up the global logger with the given log level
+func Initialize(level string) error <span class="cov8" title="1">{
+        lvl, err := zap.ParseAtomicLevel(level)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="1">cfg := zap.NewProductionConfig()
+
+        cfg.Level = lvl
+
+        zl, err := cfg.Build()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="1">Log = zl
+        return nil</span>
+}
+
+type (
+        responseData struct {
+                status int
+                size   int
+        }
+
+        loggingResponseWriter struct {
+                http.ResponseWriter
+                responseData *responseData
+        }
+)
+
+// Write writes the data to the underlying http.ResponseWriter
+func (r *loggingResponseWriter) Write(b []byte) (int, error) <span class="cov8" title="1">{
+        size, err := r.ResponseWriter.Write(b)
+        r.responseData.size += size
+        return size, err
+}</span>
+
+// WriteHeader sets the HTTP status code for the response and stores it in responseData
+func (r *loggingResponseWriter) WriteHeader(statusCode int) <span class="cov8" title="1">{
+        r.ResponseWriter.WriteHeader(statusCode)
+        r.responseData.status = statusCode
+}</span>
+
+// WithLogging wraps an HTTP handler to log incoming requests and their responses
+func WithLogging(h http.Handler) http.Handler <span class="cov8" title="1">{
+        return GzipHandle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) </span><span class="cov8" title="1">{
+                start := time.Now()
+
+                duration := time.Since(start)
+
+                Log.Info("Incoming request",
+                        zap.String("uri", r.RequestURI),
+                        zap.String("method", r.Method),
+                        zap.Duration("duration", duration),
+                )
+
+                responseData := &amp;responseData{
+                        status: http.StatusOK,
+                        size:   0,
+                }
+                lw := loggingResponseWriter{
+                        ResponseWriter: w,
+                        responseData:   responseData,
+                }
+                h.ServeHTTP(&amp;lw, r)
+
+                Log.Info("HTTP request",
+                        zap.Int("status", responseData.status),
+                        zap.Int("size", responseData.size),
+                )
+        }</span>))
+}
+</pre>
+		
+		<pre class="file" id="file15" style="display: none">package middleware
+
+import (
+        "fmt"
+        "net"
+        "net/http"
+
+        "github.com/Te8va/shortURL/internal/app/config"
+)
+
+// TrustedSubnetMiddleware creates middleware that checks if client IP is in trusted subnet
+func TrustedSubnetMiddleware(cfg *config.Config) func(http.Handler) http.Handler <span class="cov8" title="1">{
+        return func(next http.Handler) http.Handler </span><span class="cov8" title="1">{
+                return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) </span><span class="cov8" title="1">{
+                        if cfg.TrustedSubnet == "" </span><span class="cov8" title="1">{
+                                http.Error(w, "Forbidden", http.StatusForbidden)
+                                return
+                        }</span>
+
+                        <span class="cov8" title="1">clientIP := getClientIP(r)
+                        isAllowed, err := isIPInSubnet(clientIP, cfg.TrustedSubnet)
+                        if err != nil </span><span class="cov8" title="1">{
+                                http.Error(w, "Internal server error", http.StatusInternalServerError)
+                                return
+                        }</span>
+
+                        <span class="cov8" title="1">if !isAllowed </span><span class="cov8" title="1">{
+                                http.Error(w, "Forbidden", http.StatusForbidden)
+                                return
+                        }</span>
+
+                        <span class="cov8" title="1">next.ServeHTTP(w, r)</span>
+                })
+        }
+}
+
+func isIPInSubnet(ipStr, subnetCIDR string) (bool, error) <span class="cov8" title="1">{
+        ip := net.ParseIP(ipStr)
+        if ip == nil </span><span class="cov8" title="1">{
+                return false, fmt.Errorf("invalid IP address: %s", ipStr)
+        }</span>
+
+        <span class="cov8" title="1">_, subnet, err := net.ParseCIDR(subnetCIDR)
+        if err != nil </span><span class="cov8" title="1">{
+                return false, fmt.Errorf("invalid trusted subnet: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return subnet.Contains(ip), nil</span>
+}
+
+func getClientIP(r *http.Request) string <span class="cov8" title="1">{
+        if realIP := r.Header.Get("X-Real-IP"); realIP != "" </span><span class="cov8" title="1">{
+                return realIP
+        }</span>
+
+        <span class="cov8" title="1">host, _, err := net.SplitHostPort(r.RemoteAddr)
+        if err != nil </span><span class="cov8" title="1">{
+                return r.RemoteAddr
+        }</span>
+        <span class="cov8" title="1">return host</span>
+}
+</pre>
+		
+		<pre class="file" id="file16" style="display: none">package repository
+
+import (
+        "context"
+        "encoding/json"
+        "fmt"
+        "math/rand"
+        "os"
+        "sync"
+
+        "github.com/Te8va/shortURL/internal/app/config"
+        appErrors "github.com/Te8va/shortURL/internal/app/errors"
+)
+
+const length = 8
+
+// JSONRepository is a storage implementation that saves data in a JSON file
+type JSONRepository struct {
+        file  string
+        store map[string]URLData
+        mu    sync.RWMutex
+        cfg   *config.Config
+}
+
+// URLData represents the structure for storing URL information
+type URLData struct {
+        UserID      int    `json:"user_id"`
+        OriginalURL string `json:"original_url"`
+        ShortURL    string `json:"short_url"`
+}
+
+// NewJSONRepository creates a new JSON repository and loads data from the file.
+func NewJSONRepository(filePath string, cfg *config.Config) (*JSONRepository, error) <span class="cov0" title="0">{
+        if filePath == "" </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("путь к файлу не задан")
+        }</span>
+
+        <span class="cov0" title="0">repo := &amp;JSONRepository{
+                file:  filePath,
+                store: make(map[string]URLData),
+                cfg:   cfg,
+        }
+
+        if err := repo.loadFromFile(); err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("ошибка загрузки данных из файла: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return repo, nil</span>
+}
+
+// Save stores URL and returns its shortened version
+func (r *JSONRepository) Save(ctx context.Context, userID int, url string) (string, error) <span class="cov0" title="0">{
+        id := r.generateID()
+        shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
+
+        r.mu.Lock()
+        defer r.mu.Unlock()
+
+        for key, val := range r.store </span><span class="cov0" title="0">{
+                if val.OriginalURL == url &amp;&amp; val.UserID == userID </span><span class="cov0" title="0">{
+                        return key, appErrors.ErrURLExists
+                }</span>
+        }
+
+        <span class="cov0" title="0">r.store[shortenedURL] = URLData{
+                UserID:      userID,
+                OriginalURL: url,
+                ShortURL:    shortenedURL,
+        }
+
+        if err := r.saveToFile(); err != nil </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("ошибка сохранения в файл: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return shortenedURL, nil</span>
+}
+
+// Get returns the original URL by its shortened identifier
+func (r *JSONRepository) Get(ctx context.Context, id string) (string, bool, bool) <span class="cov0" title="0">{
+        r.mu.RLock()
+        defer r.mu.RUnlock()
+
+        url, exists := r.store[id]
+        if !exists </span><span class="cov0" title="0">{
+                return "", false, false
+        }</span>
+        <span class="cov0" title="0">return url.OriginalURL, true, false</span>
+}
+
+// SaveBatch stores multiple URLs in a single call.
+func (r *JSONRepository) SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error) <span class="cov0" title="0">{
+        result := make(map[string]string)
+
+        r.mu.Lock()
+        defer r.mu.Unlock()
+
+        for correlationID, originalURL := range urls </span><span class="cov0" title="0">{
+                id := r.generateID()
+                shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
+                r.store[shortenedURL] = URLData{
+                        UserID:      userID,
+                        OriginalURL: originalURL,
+                        ShortURL:    shortenedURL,
+                }
+                result[correlationID] = shortenedURL
+        }</span>
+
+        <span class="cov0" title="0">if err := r.saveToFile(); err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("ошибка сохранения в файл: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return result, nil</span>
+}
+
+func (r *JSONRepository) saveToFile() error <span class="cov0" title="0">{
+        file, err := os.OpenFile(r.file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("ошибка открытия файла %s: %w", r.file, err)
+        }</span>
+        <span class="cov0" title="0">defer file.Close()
+
+        jsonData, err := json.MarshalIndent(r.store, "", "  ")
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("ошибка сериализации данных: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">_, err = file.Write(jsonData)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("ошибка записи в файл %s: %w", r.file, err)
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+func (r *JSONRepository) loadFromFile() error <span class="cov0" title="0">{
+        fileData, err := os.ReadFile(r.file)
+        if err != nil </span><span class="cov0" title="0">{
+                if os.IsNotExist(err) </span><span class="cov0" title="0">{
+                        return nil
+                }</span>
+                <span class="cov0" title="0">return fmt.Errorf("ошибка чтения файла: %w", err)</span>
+        }
+
+        <span class="cov0" title="0">if len(fileData) == 0 </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+
+        <span class="cov0" title="0">r.mu.Lock()
+        defer r.mu.Unlock()
+
+        if err := json.Unmarshal(fileData, &amp;r.store); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("ошибка десериализации данных из файла: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+// GetUserURLs returns all URLs belonging to a specific user
+func (r *JSONRepository) GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error) <span class="cov0" title="0">{
+        r.mu.RLock()
+        defer r.mu.RUnlock()
+
+        var urls []map[string]string
+        for _, data := range r.store </span><span class="cov0" title="0">{
+                if data.UserID == userID </span><span class="cov0" title="0">{
+                        urls = append(urls, map[string]string{
+                                "short_url":    data.ShortURL,
+                                "original_url": data.OriginalURL,
+                        })
+                }</span>
+        }
+
+        <span class="cov0" title="0">if len(urls) == 0 </span><span class="cov0" title="0">{
+                return nil, nil
+        }</span>
+
+        <span class="cov0" title="0">return urls, nil</span>
+}
+
+func (r *JSONRepository) generateID() string <span class="cov0" title="0">{
+        const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+        for </span><span class="cov0" title="0">{
+                randStrBytes := make([]byte, length)
+                for i := 0; i &lt; length; i++ </span><span class="cov0" title="0">{
+                        randStrBytes[i] = charset[rand.Intn(len(charset))]
+                }</span>
+                <span class="cov0" title="0">id := string(randStrBytes)
+
+                r.mu.RLock()
+                _, exists := r.store[id]
+                r.mu.RUnlock()
+
+                if !exists </span><span class="cov0" title="0">{
+                        return id
+                }</span>
+        }
+}
+</pre>
+		
+		<pre class="file" id="file17" style="display: none">package repository
+
+import (
+        "context"
+        "fmt"
+        "math/rand"
+
+        "github.com/Te8va/shortURL/internal/app/config"
+)
+
+// MemoryRepository is a storage implementation that keeps data in memory.
+type MemoryRepository struct {
+        store map[string]string
+        cfg   *config.Config
+}
+
+// NewMemoryRepository creates a new in-memory repository.
+func NewMemoryRepository(cfg *config.Config) *MemoryRepository <span class="cov0" title="0">{
+        return &amp;MemoryRepository{
+                store: make(map[string]string),
+                cfg:   cfg,
+        }
+}</span>
+
+// Save stores URL and returns its shortened version.
+func (r *MemoryRepository) Save(ctx context.Context, userID int, url string) (string, error) <span class="cov0" title="0">{
+        id := r.generateID()
+        shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
+        r.store[shortenedURL] = url
+
+        return shortenedURL, nil
+}</span>
+
+// Get returns the original URL by its shortened identifier
+func (r *MemoryRepository) Get(ctx context.Context, id string) (string, bool, bool) <span class="cov0" title="0">{
+        url, exists := r.store[id]
+        if !exists </span><span class="cov0" title="0">{
+                return "", false, false
+        }</span>
+        <span class="cov0" title="0">return url, true, false</span>
+}
+
+// SaveBatch stores multiple URLs in a single call
+func (r *MemoryRepository) SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error) <span class="cov0" title="0">{
+        result := make(map[string]string)
+        for correlationID, originalURL := range urls </span><span class="cov0" title="0">{
+                id := r.generateID()
+                shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
+
+                r.store[shortenedURL] = originalURL
+                result[correlationID] = id
+        }</span>
+
+        <span class="cov0" title="0">return result, nil</span>
+}
+
+func (r *MemoryRepository) generateID() string <span class="cov0" title="0">{
+        const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+        for </span><span class="cov0" title="0">{
+                randStrBytes := make([]byte, length)
+                for i := 0; i &lt; length; i++ </span><span class="cov0" title="0">{
+                        randStrBytes[i] = charset[rand.Intn(len(charset))]
+                }</span>
+                <span class="cov0" title="0">id := string(randStrBytes)
+
+                _, exists := r.store[id]
+
+                if !exists </span><span class="cov0" title="0">{
+                        return id
+                }</span>
+        }
+}
+
+// GetUserURLs returns all URLs belonging to a specific user
+func (r *MemoryRepository) GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error) <span class="cov0" title="0">{
+        return []map[string]string{}, nil
+}</span>
+</pre>
+		
+		<pre class="file" id="file18" style="display: none">package repository
+
+import (
+        "errors"
+        "fmt"
+
+        "github.com/golang-migrate/migrate/v4"
+        _ "github.com/golang-migrate/migrate/v4/database/postgres"
+        _ "github.com/golang-migrate/migrate/v4/source/file"
+)
+
+// Migrator defines an interface for managing database migrations.
+//
+//go:generate mockgen -destination=mocks/migrator_mock.gen.go -package=mocks . Migrator
+type Migrator interface {
+        Up() error
+        Close() (sourceErr, databaseErr error)
+}
+
+// ApplyMigrations applies database migrations and closes the migrator connection
+func ApplyMigrations(m Migrator) error <span class="cov8" title="1">{
+        if err := m.Up(); err != nil &amp;&amp; !errors.Is(err, migrate.ErrNoChange) </span><span class="cov8" title="1">{
+                return fmt.Errorf("repository.ApplyMigrations(): %w", err)
+        }</span>
+
+        <span class="cov8" title="1">sourceErr, databaseErr := m.Close()
+
+        if sourceErr != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("repository.ApplyMigrations(): %w", sourceErr)
+        }</span>
+
+        <span class="cov8" title="1">if databaseErr != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("repository.ApplyMigrations(): %w", databaseErr)
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file19" style="display: none">// Code generated by MockGen. DO NOT EDIT.
+// Source: github.com/Te8va/shortURL/internal/app/repository (interfaces: Migrator)
+
+// Package mocks is a generated GoMock package.
+package mocks
+
+import (
+        reflect "reflect"
+
+        gomock "github.com/golang/mock/gomock"
+)
+
+// MockMigrator is a mock of Migrator interface.
+type MockMigrator struct {
+        ctrl     *gomock.Controller
+        recorder *MockMigratorMockRecorder
+}
+
+// MockMigratorMockRecorder is the mock recorder for MockMigrator.
+type MockMigratorMockRecorder struct {
+        mock *MockMigrator
+}
+
+// NewMockMigrator creates a new mock instance.
+func NewMockMigrator(ctrl *gomock.Controller) *MockMigrator <span class="cov0" title="0">{
+        mock := &amp;MockMigrator{ctrl: ctrl}
+        mock.recorder = &amp;MockMigratorMockRecorder{mock}
+        return mock
+}</span>
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMigrator) EXPECT() *MockMigratorMockRecorder <span class="cov0" title="0">{
+        return m.recorder
+}</span>
+
+// Close mocks base method.
+func (m *MockMigrator) Close() (error, error) <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "Close")
+        ret0, _ := ret[0].(error)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}</span>
+
+// Close indicates an expected call of Close.
+func (mr *MockMigratorMockRecorder) Close() *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockMigrator)(nil).Close))
+}</span>
+
+// Up mocks base method.
+func (m *MockMigrator) Up() error <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "Up")
+        ret0, _ := ret[0].(error)
+        return ret0
+}</span>
+
+// Up indicates an expected call of Up.
+func (mr *MockMigratorMockRecorder) Up() *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Up", reflect.TypeOf((*MockMigrator)(nil).Up))
+}</span>
+</pre>
+		
+		<pre class="file" id="file20" style="display: none">package repository
+
+import (
+        "context"
+        "errors"
+        "fmt"
+
+        "github.com/jackc/pgx/v5"
+        "github.com/jackc/pgx/v5/pgxpool"
+)
+
+// postgres wrapper around pgxpool.Pool for working with PostgreSQL
+type postgres struct {
+        *pgxpool.Pool
+}
+
+// NewPostgres creates a new postgres object with the given connection pool
+func NewPostgres(pool *pgxpool.Pool) *postgres <span class="cov0" title="0">{
+        return &amp;postgres{pool}
+}</span>
+
+// GetPgxPool creates a PostgreSQL connection pool using the provided DSN. Verifies the connection by calling Ping.
+func GetPgxPool(ctx context.Context, dsn string) (*pgxpool.Pool, error) <span class="cov0" title="0">{
+        config, err := pgxpool.ParseConfig(dsn)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("repository.GetPgxPool: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">pool, err := pgxpool.NewWithConfig(ctx, config)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("repository.GetPgxPool: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">err = pool.Ping(ctx)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("repository.GetPgxPool: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return pool, nil</span>
+}
+
+// WithTransaction executes the provided function within a PostgreSQL transaction
+func (p *postgres) WithTransaction(ctx context.Context, txFunc func(pgx.Tx) error) error <span class="cov0" title="0">{
+        conn, err := p.Pool.Acquire(ctx)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("repository.WithTransaction: %w", err)
+        }</span>
+        <span class="cov0" title="0">defer conn.Release()
+
+        tx, err := conn.Begin(ctx)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("repository.WithTransaction: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">err = txFunc(tx)
+        if err != nil </span><span class="cov0" title="0">{
+                rollbackErr := tx.Rollback(ctx)
+                if rollbackErr != nil </span><span class="cov0" title="0">{
+                        resErr := errors.Join(err, rollbackErr)
+                        return fmt.Errorf("repository.WithTransaction: %w", resErr)
+                }</span>
+
+                <span class="cov0" title="0">return fmt.Errorf("repository.WithTransaction: %w", err)</span>
+        }
+
+        <span class="cov0" title="0">err = tx.Commit(ctx)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("repository.WithTransaction: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file21" style="display: none">package repository
+
+import (
+        "context"
+        "fmt"
+        "log"
+        "math/rand"
+
+        "github.com/jackc/pgx"
+        "github.com/jackc/pgx/v5/pgxpool"
+
+        "github.com/Te8va/shortURL/internal/app/config"
+        appErrors "github.com/Te8va/shortURL/internal/app/errors"
+)
+
+// URLRepository — repository for managing shortened URLs in PostgreSQL.
+type URLRepository struct {
+        db  *pgxpool.Pool
+        cfg *config.Config
+}
+
+// NewURLRepository creates a new URLRepository instance with the given connection pool and configuration.
+func NewURLRepository(db *pgxpool.Pool, cfg *config.Config) (*URLRepository, error) <span class="cov0" title="0">{
+        if db == nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("database connection is nil")
+        }</span>
+        <span class="cov0" title="0">if cfg == nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("config is nil")
+        }</span>
+        <span class="cov0" title="0">return &amp;URLRepository{db: db, cfg: cfg}, nil</span>
+}
+
+// PingPg checks the availability of the PostgreSQL database.
+func (r *URLRepository) PingPg(ctx context.Context) error <span class="cov0" title="0">{
+        err := r.db.Ping(ctx)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("repository.Ping: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+// Save stores URL and returns its shortened version
+func (r *URLRepository) Save(ctx context.Context, userID int, url string) (string, error) <span class="cov0" title="0">{
+        id := r.generateID()
+        shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
+
+        query := `WITH ins AS (
+                                INSERT INTO urlshrt (short, original, user_id) 
+                                VALUES ($1, $2, $3)
+                                ON CONFLICT (original) DO NOTHING
+                                RETURNING short
+                          )
+                          SELECT short FROM ins
+                          UNION ALL
+                          SELECT short FROM urlshrt WHERE original = $2 LIMIT 1;`
+
+        var existingShort string
+        err := r.db.QueryRow(ctx, query, shortenedURL, url, userID).Scan(&amp;existingShort)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("ошибка при сохранении или получении short URL: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">if existingShort != shortenedURL </span><span class="cov0" title="0">{
+                return existingShort, appErrors.ErrURLExists
+        }</span>
+
+        <span class="cov0" title="0">return existingShort, nil</span>
+}
+
+// Get returns the original URL by its shortened identifier
+func (r *URLRepository) Get(ctx context.Context, id string) (string, bool, bool) <span class="cov0" title="0">{
+        query := `SELECT original, is_deleted FROM urlshrt WHERE short = $1;`
+
+        var originalURL string
+        var isDeleted bool
+
+        err := r.db.QueryRow(ctx, query, id).Scan(&amp;originalURL, &amp;isDeleted)
+        if err != nil </span><span class="cov0" title="0">{
+                if err == pgx.ErrNoRows </span><span class="cov0" title="0">{
+                        return "", false, false
+                }</span>
+                <span class="cov0" title="0">log.Printf("Ошибка запроса в БД: %v", err)
+                return "", false, false</span>
+        }
+
+        <span class="cov0" title="0">return originalURL, true, isDeleted</span>
+}
+
+// SaveBatch stores multiple URLs in a single call.
+func (r *URLRepository) SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error) <span class="cov0" title="0">{
+        tx, err := r.db.Begin(ctx)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("ошибка начала транзакции: %w", err)
+        }</span>
+        <span class="cov0" title="0">defer func() </span><span class="cov0" title="0">{
+                if rollbackErr := tx.Rollback(ctx); rollbackErr != nil &amp;&amp; err == nil </span><span class="cov0" title="0">{
+                        err = fmt.Errorf("ошибка при откате транзакции: %w", rollbackErr)
+                }</span>
+        }()
+
+        <span class="cov0" title="0">result := make(map[string]string)
+        for correlationID, originalURL := range urls </span><span class="cov0" title="0">{
+                id := r.generateID()
+                shortenedURL := fmt.Sprintf("%s/%s", r.cfg.BaseURL, id)
+                query := `INSERT INTO urlshrt (short, original, user_id) VALUES ($1, $2, $3);`
+
+                _, err := tx.Exec(ctx, query, shortenedURL, originalURL)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("ошибка сохранения URL в БД: %w", err)
+                }</span>
+
+                <span class="cov0" title="0">result[correlationID] = shortenedURL</span>
+        }
+
+        <span class="cov0" title="0">if err := tx.Commit(ctx); err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("ошибка при завершении транзакции: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return result, nil</span>
+}
+
+func (r *URLRepository) generateID() string <span class="cov0" title="0">{
+        const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+        for </span><span class="cov0" title="0">{
+                randStrBytes := make([]byte, length)
+                for i := 0; i &lt; length; i++ </span><span class="cov0" title="0">{
+                        randStrBytes[i] = charset[rand.Intn(len(charset))]
+                }</span>
+                <span class="cov0" title="0">id := string(randStrBytes)
+
+                var exists bool
+                err := r.db.QueryRow(context.Background(), "SELECT EXISTS(SELECT 1 FROM urlshrt WHERE short = $1)", id).Scan(&amp;exists)
+                if err != nil </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+
+                <span class="cov0" title="0">if !exists </span><span class="cov0" title="0">{
+                        return id
+                }</span>
+        }
+}
+
+// GetUserURLs returns all URLs belonging to a specific user
+func (r *URLRepository) GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error) <span class="cov0" title="0">{
+        query := `SELECT short, original FROM urlshrt WHERE user_id = $1;`
+
+        rows, err := r.db.Query(ctx, query, userID)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("ошибка при получении URL пользователя: %w", err)
+        }</span>
+        <span class="cov0" title="0">defer rows.Close()
+
+        var urls []map[string]string
+        for rows.Next() </span><span class="cov0" title="0">{
+                var shortURL, originalURL string
+                if err := rows.Scan(&amp;shortURL, &amp;originalURL); err != nil </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("ошибка при сканировании URL: %w", err)
+                }</span>
+                <span class="cov0" title="0">urls = append(urls, map[string]string{
+                        "short_url":    shortURL,
+                        "original_url": originalURL,
+                })</span>
+        }
+
+        <span class="cov0" title="0">if len(urls) == 0 </span><span class="cov0" title="0">{
+                return nil, nil
+        }</span>
+
+        <span class="cov0" title="0">return urls, nil</span>
+}
+
+// DeleteUserURLs marks URLs as deleted for user.
+func (r *URLRepository) DeleteUserURLs(ctx context.Context, ids []string, userID int) error <span class="cov0" title="0">{
+        query := `UPDATE urlshrt SET is_deleted = true WHERE short = ANY($1) AND user_id = $2;`
+
+        res, err := r.db.Exec(ctx, query, ids, userID)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Printf("Ошибка удаления URL (user_id=%d): %v", userID, err)
+                return fmt.Errorf("ошибка при удалении URL: %w", err)
+        }</span>
+        <span class="cov0" title="0">if res.RowsAffected() == 0 </span><span class="cov0" title="0">{
+                return fmt.Errorf("URL не найдены или не принадлежат пользователю")
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+// GetStats returns total number of shortened URLs and unique users in a single query
+func (r *URLRepository) GetStats(ctx context.Context) (int, int, error) <span class="cov0" title="0">{
+        query := ` SELECT 
+                        COUNT(*) AS url_count, 
+                        COUNT(DISTINCT user_id) AS user_count 
+                FROM urlshrt 
+                WHERE is_deleted = false;`
+
+        var urlCount, userCount int
+        err := r.db.QueryRow(ctx, query).Scan(&amp;urlCount, &amp;userCount)
+        if err != nil </span><span class="cov0" title="0">{
+                return 0, 0, fmt.Errorf("ошибка при получении статистики: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return urlCount, userCount, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file22" style="display: none">package router
+
+import (
+        "log"
+
+        _ "net/http/pprof"
+
+        "github.com/go-chi/chi/v5"
+        _ "github.com/jackc/pgx/v5/stdlib"
+
+        mdlwr "github.com/go-chi/chi/v5/middleware"
+
+        "github.com/Te8va/shortURL/internal/app/config"
+        "github.com/Te8va/shortURL/internal/app/handler"
+        "github.com/Te8va/shortURL/internal/app/middleware"
+        "github.com/Te8va/shortURL/internal/app/service"
+)
+
+// NewRouter creates and configures the main HTTP router for the application
+func NewRouter(cfg *config.Config, saver service.URLSaverServ, getter service.URLGetterServ, pinger service.PingerServ, deleter service.URLDeleteServ, stat service.URLStatsServ) chi.Router <span class="cov0" title="0">{
+        r := chi.NewRouter()
+
+        if err := middleware.Initialize("info"); err != nil </span><span class="cov0" title="0">{
+                log.Println("Failed to initialize middleware:", err)
+        }</span>
+
+        <span class="cov0" title="0">r.Use(middleware.AuthMiddleware(cfg.JWTKey))
+        r.Use(middleware.WithLogging)
+
+        r.Mount("/", newRootRouter(cfg, saver, getter))
+        r.Mount("/api", newAPIRouter(cfg, saver, getter, deleter, stat))
+        r.Mount("/ping", newPingRouter(pinger))
+        r.Mount("/debug", mdlwr.Profiler())
+
+        return r</span>
+}
+
+func newRootRouter(cfg *config.Config, saver service.URLSaverServ, getter service.URLGetterServ) chi.Router <span class="cov0" title="0">{
+        r := chi.NewRouter()
+
+        saveHandler := handler.NewSaveHandler(saver)
+        getHandler := handler.NewGetterHandler(getter, cfg)
+
+        r.Post("/", saveHandler.PostHandler)
+        r.Get("/{id}", getHandler.GetHandler)
+
+        return r
+}</span>
+
+func newAPIRouter(cfg *config.Config, saver service.URLSaverServ, getter service.URLGetterServ, deleter service.URLDeleteServ, stat service.URLStatsServ) chi.Router <span class="cov0" title="0">{
+        r := chi.NewRouter()
+
+        saveHandler := handler.NewSaveHandler(saver)
+        getHandler := handler.NewGetterHandler(getter, cfg)
+        deleteHandler := handler.NewDeleteHandler(deleter, cfg)
+        statsHandler := handler.NewStatsHandler(stat, cfg)
+
+        r.Route("/shorten", func(r chi.Router) </span><span class="cov0" title="0">{
+                r.Post("/", saveHandler.PostHandlerJSON)
+                r.Post("/batch", saveHandler.PostHandlerBatch)
+        }</span>)
+
+        <span class="cov0" title="0">r.Route("/user", func(r chi.Router) </span><span class="cov0" title="0">{
+                r.Get("/urls", getHandler.GetUserURLsHandler)
+                r.Delete("/urls", deleteHandler.DeleteUserURLsHandler)
+        }</span>)
+
+        <span class="cov0" title="0">r.Route("/internal", func(r chi.Router) </span><span class="cov0" title="0">{
+                r.Use(middleware.TrustedSubnetMiddleware(cfg))
+                r.Get("/stats", statsHandler.GetStatsHandler)
+        }</span>)
+
+        <span class="cov0" title="0">return r</span>
+}
+
+func newPingRouter(pinger service.PingerServ) chi.Router <span class="cov0" title="0">{
+        r := chi.NewRouter()
+
+        if pinger != nil </span><span class="cov0" title="0">{
+                pingHandler := handler.NewPingHandler(pinger)
+                r.Get("/", pingHandler.PingHandler)
+        }</span>
+
+        <span class="cov0" title="0">return r</span>
+}
+</pre>
+		
+		<pre class="file" id="file23" style="display: none">package service
+
+import "context"
+
+// URLDeleteServ defines the interface for service that deletes user URLs
+//
+//go:generate mockgen -source=deleter.go -destination=mocks/delete_mock.gen.go -package=mocks
+type URLDeleteServ interface {
+        DeleteUserURLs(ctx context.Context, ids []string, userID int) error
+}
+
+// DeleteUserURLs delegates the delete operation to repository
+func (s *URLService) DeleteUserURLs(ctx context.Context, ids []string, userID int) error <span class="cov8" title="1">{
+        return s.deleter.DeleteUserURLs(ctx, ids, userID)
+}</span>
+</pre>
+		
+		<pre class="file" id="file24" style="display: none">package service
+
+import "context"
+
+// URLGetterServ defines the interface for a service that retrieves URLs
+//
+//go:generate mockgen -source=getter.go -destination=mocks/getter_mock.gen.go -package=mocks
+type URLGetterServ interface {
+        Get(ctx context.Context, id string) (string, bool, bool)
+        GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error)
+}
+
+// Get delegates the retrieval operation to repository
+func (s *URLService) Get(ctx context.Context, id string) (string, bool, bool) <span class="cov8" title="1">{
+        return s.getter.Get(ctx, id)
+}</span>
+
+// GetUserURLs delegates the retrieval of the user's URLs to repository
+func (s *URLService) GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error) <span class="cov8" title="1">{
+        return s.getter.GetUserURLs(ctx, userID)
+}</span>
+</pre>
+		
+		<pre class="file" id="file25" style="display: none">// Code generated by MockGen. DO NOT EDIT.
+// Source: deleter.go
+
+// Package mocks is a generated GoMock package.
+package mocks
+
+import (
+        context "context"
+        reflect "reflect"
+
+        gomock "github.com/golang/mock/gomock"
+)
+
+// MockURLDeleteServ is a mock of URLDeleteServ interface.
+type MockURLDeleteServ struct {
+        ctrl     *gomock.Controller
+        recorder *MockURLDeleteServMockRecorder
+}
+
+// MockURLDeleteServMockRecorder is the mock recorder for MockURLDeleteServ.
+type MockURLDeleteServMockRecorder struct {
+        mock *MockURLDeleteServ
+}
+
+// NewMockURLDeleteServ creates a new mock instance.
+func NewMockURLDeleteServ(ctrl *gomock.Controller) *MockURLDeleteServ <span class="cov0" title="0">{
+        mock := &amp;MockURLDeleteServ{ctrl: ctrl}
+        mock.recorder = &amp;MockURLDeleteServMockRecorder{mock}
+        return mock
+}</span>
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockURLDeleteServ) EXPECT() *MockURLDeleteServMockRecorder <span class="cov0" title="0">{
+        return m.recorder
+}</span>
+
+// DeleteUserURLs mocks base method.
+func (m *MockURLDeleteServ) DeleteUserURLs(ctx context.Context, ids []string, userID int) error <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "DeleteUserURLs", ctx, ids, userID)
+        ret0, _ := ret[0].(error)
+        return ret0
+}</span>
+
+// DeleteUserURLs indicates an expected call of DeleteUserURLs.
+func (mr *MockURLDeleteServMockRecorder) DeleteUserURLs(ctx, ids, userID interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserURLs", reflect.TypeOf((*MockURLDeleteServ)(nil).DeleteUserURLs), ctx, ids, userID)
+}</span>
+</pre>
+		
+		<pre class="file" id="file26" style="display: none">// Code generated by MockGen. DO NOT EDIT.
+// Source: getter.go
+
+// Package mocks is a generated GoMock package.
+package mocks
+
+import (
+        context "context"
+        reflect "reflect"
+
+        gomock "github.com/golang/mock/gomock"
+)
+
+// MockURLGetterServ is a mock of URLGetterServ interface.
+type MockURLGetterServ struct {
+        ctrl     *gomock.Controller
+        recorder *MockURLGetterServMockRecorder
+}
+
+// MockURLGetterServMockRecorder is the mock recorder for MockURLGetterServ.
+type MockURLGetterServMockRecorder struct {
+        mock *MockURLGetterServ
+}
+
+// NewMockURLGetterServ creates a new mock instance.
+func NewMockURLGetterServ(ctrl *gomock.Controller) *MockURLGetterServ <span class="cov0" title="0">{
+        mock := &amp;MockURLGetterServ{ctrl: ctrl}
+        mock.recorder = &amp;MockURLGetterServMockRecorder{mock}
+        return mock
+}</span>
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockURLGetterServ) EXPECT() *MockURLGetterServMockRecorder <span class="cov0" title="0">{
+        return m.recorder
+}</span>
+
+// Get mocks base method.
+func (m *MockURLGetterServ) Get(ctx context.Context, id string) (string, bool, bool) <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "Get", ctx, id)
+        ret0, _ := ret[0].(string)
+        ret1, _ := ret[1].(bool)
+        ret2, _ := ret[2].(bool)
+        return ret0, ret1, ret2
+}</span>
+
+// Get indicates an expected call of Get.
+func (mr *MockURLGetterServMockRecorder) Get(ctx, id interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockURLGetterServ)(nil).Get), ctx, id)
+}</span>
+
+// GetUserURLs mocks base method.
+func (m *MockURLGetterServ) GetUserURLs(ctx context.Context, userID int) ([]map[string]string, error) <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "GetUserURLs", ctx, userID)
+        ret0, _ := ret[0].([]map[string]string)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}</span>
+
+// GetUserURLs indicates an expected call of GetUserURLs.
+func (mr *MockURLGetterServMockRecorder) GetUserURLs(ctx, userID interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserURLs", reflect.TypeOf((*MockURLGetterServ)(nil).GetUserURLs), ctx, userID)
+}</span>
+</pre>
+		
+		<pre class="file" id="file27" style="display: none">// Code generated by MockGen. DO NOT EDIT.
+// Source: pinger.go
+
+// Package mocks is a generated GoMock package.
+package mocks
+
+import (
+        context "context"
+        reflect "reflect"
+
+        gomock "github.com/golang/mock/gomock"
+)
+
+// MockPingerServ is a mock of PingerServ interface.
+type MockPingerServ struct {
+        ctrl     *gomock.Controller
+        recorder *MockPingerServMockRecorder
+}
+
+// MockPingerServMockRecorder is the mock recorder for MockPingerServ.
+type MockPingerServMockRecorder struct {
+        mock *MockPingerServ
+}
+
+// NewMockPingerServ creates a new mock instance.
+func NewMockPingerServ(ctrl *gomock.Controller) *MockPingerServ <span class="cov0" title="0">{
+        mock := &amp;MockPingerServ{ctrl: ctrl}
+        mock.recorder = &amp;MockPingerServMockRecorder{mock}
+        return mock
+}</span>
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockPingerServ) EXPECT() *MockPingerServMockRecorder <span class="cov0" title="0">{
+        return m.recorder
+}</span>
+
+// PingPg mocks base method.
+func (m *MockPingerServ) PingPg(ctx context.Context) error <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "PingPg", ctx)
+        ret0, _ := ret[0].(error)
+        return ret0
+}</span>
+
+// PingPg indicates an expected call of PingPg.
+func (mr *MockPingerServMockRecorder) PingPg(ctx interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PingPg", reflect.TypeOf((*MockPingerServ)(nil).PingPg), ctx)
+}</span>
+</pre>
+		
+		<pre class="file" id="file28" style="display: none">// Code generated by MockGen. DO NOT EDIT.
+// Source: saver.go
+
+// Package mocks is a generated GoMock package.
+package mocks
+
+import (
+        context "context"
+        reflect "reflect"
+
+        gomock "github.com/golang/mock/gomock"
+)
+
+// MockURLSaverServ is a mock of URLSaverServ interface.
+type MockURLSaverServ struct {
+        ctrl     *gomock.Controller
+        recorder *MockURLSaverServMockRecorder
+}
+
+// MockURLSaverServMockRecorder is the mock recorder for MockURLSaverServ.
+type MockURLSaverServMockRecorder struct {
+        mock *MockURLSaverServ
+}
+
+// NewMockURLSaverServ creates a new mock instance.
+func NewMockURLSaverServ(ctrl *gomock.Controller) *MockURLSaverServ <span class="cov0" title="0">{
+        mock := &amp;MockURLSaverServ{ctrl: ctrl}
+        mock.recorder = &amp;MockURLSaverServMockRecorder{mock}
+        return mock
+}</span>
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockURLSaverServ) EXPECT() *MockURLSaverServMockRecorder <span class="cov0" title="0">{
+        return m.recorder
+}</span>
+
+// Save mocks base method.
+func (m *MockURLSaverServ) Save(ctx context.Context, userID int, url string) (string, error) <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "Save", ctx, userID, url)
+        ret0, _ := ret[0].(string)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}</span>
+
+// Save indicates an expected call of Save.
+func (mr *MockURLSaverServMockRecorder) Save(ctx, userID, url interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockURLSaverServ)(nil).Save), ctx, userID, url)
+}</span>
+
+// SaveBatch mocks base method.
+func (m *MockURLSaverServ) SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error) <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "SaveBatch", ctx, userID, urls)
+        ret0, _ := ret[0].(map[string]string)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}</span>
+
+// SaveBatch indicates an expected call of SaveBatch.
+func (mr *MockURLSaverServMockRecorder) SaveBatch(ctx, userID, urls interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveBatch", reflect.TypeOf((*MockURLSaverServ)(nil).SaveBatch), ctx, userID, urls)
+}</span>
+</pre>
+		
+		<pre class="file" id="file29" style="display: none">// Code generated by MockGen. DO NOT EDIT.
+// Source: stats.go
+
+// Package mocks is a generated GoMock package.
+package mocks
+
+import (
+        context "context"
+        reflect "reflect"
+
+        gomock "github.com/golang/mock/gomock"
+)
+
+// MockURLStatsServ is a mock of URLStatsServ interface.
+type MockURLStatsServ struct {
+        ctrl     *gomock.Controller
+        recorder *MockURLStatsServMockRecorder
+}
+
+// MockURLStatsServMockRecorder is the mock recorder for MockURLStatsServ.
+type MockURLStatsServMockRecorder struct {
+        mock *MockURLStatsServ
+}
+
+// NewMockURLStatsServ creates a new mock instance.
+func NewMockURLStatsServ(ctrl *gomock.Controller) *MockURLStatsServ <span class="cov0" title="0">{
+        mock := &amp;MockURLStatsServ{ctrl: ctrl}
+        mock.recorder = &amp;MockURLStatsServMockRecorder{mock}
+        return mock
+}</span>
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockURLStatsServ) EXPECT() *MockURLStatsServMockRecorder <span class="cov0" title="0">{
+        return m.recorder
+}</span>
+
+// GetStats mocks base method.
+func (m *MockURLStatsServ) GetStats(ctx context.Context) (int, int, error) <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "GetStats", ctx)
+        ret0, _ := ret[0].(int)
+        ret1, _ := ret[1].(int)
+        ret2, _ := ret[2].(error)
+        return ret0, ret1, ret2
+}</span>
+
+// GetStats indicates an expected call of GetStats.
+func (mr *MockURLStatsServMockRecorder) GetStats(ctx interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStats", reflect.TypeOf((*MockURLStatsServ)(nil).GetStats), ctx)
+}</span>
+</pre>
+		
+		<pre class="file" id="file30" style="display: none">package service
+
+import (
+        "context"
+)
+
+// PingerServ defines the interface for a service that checks database connectivity
+//
+//go:generate mockgen -source=pinger.go -destination=mocks/pinger_mock.gen.go -package=mocks
+type PingerServ interface {
+        PingPg(ctx context.Context) error
+}
+
+// URLService is an aggregate service for working with URLs
+type URLService struct {
+        saver   URLSaverServ
+        getter  URLGetterServ
+        pinger  PingerServ
+        deleter URLDeleteServ
+        stats   URLStatsServ
+}
+
+// NewURLService creates a new instance of URLService with the given dependencies
+func NewURLService(saver URLSaverServ, getter URLGetterServ, pinger PingerServ, deleter URLDeleteServ, stats URLStatsServ) *URLService <span class="cov8" title="1">{
+        return &amp;URLService{saver: saver, getter: getter, pinger: pinger, deleter: deleter, stats: stats}
+}</span>
+
+// PingPg delegates the database connectivity check to repository
+func (s *URLService) PingPg(ctx context.Context) error <span class="cov8" title="1">{
+        return s.pinger.PingPg(ctx)
+}</span>
+</pre>
+		
+		<pre class="file" id="file31" style="display: none">package service
+
+import "context"
+
+// URLSaverServ defines the interface for a service that saves URLs
+//
+//go:generate mockgen -source=saver.go -destination=mocks/saver_mock.gen.go -package=mocks
+type URLSaverServ interface {
+        Save(ctx context.Context, userID int, url string) (string, error)
+        SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error)
+}
+
+// Save delegates the save operation to repository
+func (s *URLService) Save(ctx context.Context, userID int, url string) (string, error) <span class="cov8" title="1">{
+        return s.saver.Save(ctx, userID, url)
+}</span>
+
+// SaveBatch delegates the batch save operation to repository
+func (s *URLService) SaveBatch(ctx context.Context, userID int, urls map[string]string) (map[string]string, error) <span class="cov8" title="1">{
+        return s.saver.SaveBatch(ctx, userID, urls)
+}</span>
+</pre>
+		
+		<pre class="file" id="file32" style="display: none">package service
+
+import (
+        "context"
+)
+
+// URLStatsServ defines the interface for a service that statistics of URLs and users
+//
+//go:generate mockgen -source=stats.go -destination=mocks/stats_mock.gen.go -package=mocks
+type URLStatsServ interface {
+        GetStats(ctx context.Context) (urlsCount int, usersCount int, err error)
+}
+
+// GetStats delegates statistiс of URLs and users
+func (s *URLService) GetStats(ctx context.Context) (urlsCount int, usersCount int, err error) <span class="cov8" title="1">{
+        return s.stats.GetStats(ctx)
+}</span>
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

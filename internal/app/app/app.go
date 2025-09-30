@@ -26,6 +26,7 @@ type App struct {
 	getter  service.URLGetterServ
 	pinger  service.PingerServ
 	deleter service.URLDeleteServ
+	stat    service.URLStatsServ
 	server  *http.Server
 }
 
@@ -98,6 +99,7 @@ func (a *App) initPostgresStorage(ctx context.Context) error {
 	a.getter = repo
 	a.pinger = repo
 	a.deleter = repo
+	a.stat = repo
 
 	return nil
 }
@@ -125,7 +127,7 @@ func (a *App) initMemoryStorage() error {
 }
 
 func (a *App) initServer() {
-	handler := router.NewRouter(a.cfg, a.saver, a.getter, a.pinger, a.deleter)
+	handler := router.NewRouter(a.cfg, a.saver, a.getter, a.pinger, a.deleter, a.stat)
 
 	a.server = &http.Server{
 		Addr:    a.cfg.ServerAddress,

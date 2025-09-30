@@ -187,3 +187,20 @@ func (r *URLRepository) DeleteUserURLs(ctx context.Context, ids []string, userID
 
 	return nil
 }
+
+// GetStats returns total number of shortened URLs and unique users in a single query
+func (r *URLRepository) GetStats(ctx context.Context) (int, int, error) {
+	query := ` SELECT 
+			COUNT(*) AS url_count, 
+			COUNT(DISTINCT user_id) AS user_count 
+		FROM urlshrt 
+		WHERE is_deleted = false;`
+
+	var urlCount, userCount int
+	err := r.db.QueryRow(ctx, query).Scan(&urlCount, &userCount)
+	if err != nil {
+		return 0, 0, fmt.Errorf("ошибка при получении статистики: %w", err)
+	}
+
+	return urlCount, userCount, nil
+}

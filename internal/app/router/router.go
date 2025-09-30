@@ -17,7 +17,7 @@ import (
 )
 
 // NewRouter creates and configures the main HTTP router for the application
-func NewRouter(cfg *config.Config, saver service.URLSaverServ, getter service.URLGetterServ, pinger service.PingerServ, deleter service.URLDeleteServ) chi.Router {
+func NewRouter(cfg *config.Config, saver service.URLSaverServ, getter service.URLGetterServ, pinger service.PingerServ, deleter service.URLDeleteServ, stat service.URLStatsServ) chi.Router {
 	r := chi.NewRouter()
 
 	if err := middleware.Initialize("info"); err != nil {
@@ -28,7 +28,7 @@ func NewRouter(cfg *config.Config, saver service.URLSaverServ, getter service.UR
 	r.Use(middleware.WithLogging)
 
 	r.Mount("/", newRootRouter(cfg, saver, getter))
-	r.Mount("/api", newAPIRouter(cfg, saver, getter, deleter))
+	r.Mount("/api", newAPIRouter(cfg, saver, getter, deleter, stat))
 	r.Mount("/ping", newPingRouter(pinger))
 	r.Mount("/debug", mdlwr.Profiler())
 
@@ -47,12 +47,13 @@ func newRootRouter(cfg *config.Config, saver service.URLSaverServ, getter servic
 	return r
 }
 
-func newAPIRouter(cfg *config.Config, saver service.URLSaverServ, getter service.URLGetterServ, deleter service.URLDeleteServ) chi.Router {
+func newAPIRouter(cfg *config.Config, saver service.URLSaverServ, getter service.URLGetterServ, deleter service.URLDeleteServ, stat service.URLStatsServ) chi.Router {
 	r := chi.NewRouter()
 
 	saveHandler := handler.NewSaveHandler(saver)
 	getHandler := handler.NewGetterHandler(getter, cfg)
 	deleteHandler := handler.NewDeleteHandler(deleter, cfg)
+	statsHandler := handler.NewStatsHandler(stat, cfg)
 
 	r.Route("/shorten", func(r chi.Router) {
 		r.Post("/", saveHandler.PostHandlerJSON)
@@ -62,6 +63,11 @@ func newAPIRouter(cfg *config.Config, saver service.URLSaverServ, getter service
 	r.Route("/user", func(r chi.Router) {
 		r.Get("/urls", getHandler.GetUserURLsHandler)
 		r.Delete("/urls", deleteHandler.DeleteUserURLsHandler)
+	})
+
+	r.Route("/internal", func(r chi.Router) {
+		r.Use(middleware.TrustedSubnetMiddleware(cfg))
+		r.Get("/stats", statsHandler.GetStatsHandler)
 	})
 
 	return r
