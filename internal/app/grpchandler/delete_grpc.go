@@ -18,7 +18,7 @@ func (h *ShortURLHandler) DeleteUserURLs(ctx context.Context, req *gen.DeleteUse
 		return nil, status.Error(codes.Unauthenticated, "user authentication required")
 	}
 
-	if req.Ids == nil || len(req.Ids) == 0 {
+	if len(req.Ids) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "empty list of URL IDs")
 	}
 

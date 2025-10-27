@@ -41,7 +41,7 @@ func (h *ShortURLHandler) SaveURL(ctx context.Context, req *gen.SaveURLRequest) 
 func (h *ShortURLHandler) SaveBatch(ctx context.Context, req *gen.SaveBatchRequest) (*gen.SaveBatchResponse, error) {
 	userID, _ := ctx.Value(domain.UserIDKey).(int)
 
-	if req.Items == nil || len(req.Items) == 0 {
+	if len(req.Items) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "empty batch request")
 	}
 
