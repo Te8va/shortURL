@@ -1,6 +1,6 @@
 module github.com/Te8va/shortURL
 
-go 1.22.12
+go 1.22.1
 
 require (
 	github.com/caarlos0/env/v6 v6.10.1
@@ -12,8 +12,8 @@ require (
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
-	google.golang.org/grpc v1.75.1
-	google.golang.org/protobuf v1.36.10
+	golang.org/x/crypto v0.14.0
+	google.golang.org/grpc v1.58.2
 )
 
 require (
