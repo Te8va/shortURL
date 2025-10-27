@@ -2,8 +2,6 @@ module github.com/Te8va/shortURL
 
 go 1.22.1
 
-toolchain go1.24.4
-
 require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/go-chi/chi/v5 v5.2.0
