@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -377,6 +378,72 @@ func TestGetUserURLsHandler(t *testing.T) {
 				err := json.NewDecoder(w.Body).Decode(&got)
 				require.NoError(t, err)
 				require.Equal(t, tc.wantBody, got)
+			}
+		})
+	}
+}
+
+func TestGetStatsHandler(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockStats := mocks.NewMockURLStats(ctrl)
+	testCfg := &config.Config{BaseURL: "http://localhost:8080"}
+
+	statsHandler := NewStatsHandler(mockStats, testCfg)
+
+	testCases := []struct {
+		name      string
+		mockURLs  int
+		mockUsers int
+		mockErr   error
+		wantCode  int
+		wantBody  string
+	}{
+		{
+			name:      "valid request with stats",
+			mockURLs:  150,
+			mockUsers: 25,
+			mockErr:   nil,
+			wantCode:  http.StatusOK,
+			wantBody:  `{"urls":150,"users":25}` + "\n",
+		},
+		{
+			name:      "valid request with empty stats",
+			mockURLs:  0,
+			mockUsers: 0,
+			mockErr:   nil,
+			wantCode:  http.StatusOK,
+			wantBody:  `{"urls":0,"users":0}` + "\n",
+		},
+		{
+			name:      "request with service error",
+			mockURLs:  0,
+			mockUsers: 0,
+			mockErr:   errors.New("database error"),
+			wantCode:  http.StatusInternalServerError,
+			wantBody:  "Failed to get stats\n",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockStats.EXPECT().
+				GetStats(gomock.Any()).
+				Return(tc.mockURLs, tc.mockUsers, tc.mockErr).
+				Times(1)
+
+			req, err := http.NewRequest(http.MethodGet, "/api/internal/stats", bytes.NewBufferString(""))
+			require.NoError(t, err)
+
+			w := httptest.NewRecorder()
+			statsHandler.GetStatsHandler(w, req)
+
+			require.Equal(t, tc.wantCode, w.Code)
+			require.Equal(t, tc.wantBody, w.Body.String())
+
+			if tc.wantCode == http.StatusOK {
+				require.Equal(t, contentTypeText, w.Header().Get(contentType))
 			}
 		})
 	}

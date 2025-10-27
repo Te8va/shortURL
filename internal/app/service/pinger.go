@@ -17,11 +17,12 @@ type URLService struct {
 	getter  URLGetterServ
 	pinger  PingerServ
 	deleter URLDeleteServ
+	stats   URLStatsServ
 }
 
 // NewURLService creates a new instance of URLService with the given dependencies
-func NewURLService(saver URLSaverServ, getter URLGetterServ, pinger PingerServ, deleter URLDeleteServ) *URLService {
-	return &URLService{saver: saver, getter: getter, pinger: pinger, deleter: deleter}
+func NewURLService(saver URLSaverServ, getter URLGetterServ, pinger PingerServ, deleter URLDeleteServ, stats URLStatsServ) *URLService {
+	return &URLService{saver: saver, getter: getter, pinger: pinger, deleter: deleter, stats: stats}
 }
 
 // PingPg delegates the database connectivity check to repository

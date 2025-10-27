@@ -55,7 +55,7 @@ func TestURLService_DeleteUserURLs(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.mockSetup()
 
-			svc := service.NewURLService(nil, nil, nil, mockDeleter)
+			svc := service.NewURLService(nil, nil, nil, mockDeleter, nil)
 			err := svc.DeleteUserURLs(context.Background(), tc.ids, tc.userID)
 
 			if tc.expectedErr != nil {

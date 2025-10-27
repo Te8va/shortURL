@@ -17,7 +17,7 @@ func TestURLService_Get(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockGetter := mocks.NewMockURLGetterServ(ctrl)
-	svc := service.NewURLService(nil, mockGetter, nil, nil)
+	svc := service.NewURLService(nil, mockGetter, nil, nil, nil)
 
 	testCases := []struct {
 		name           string
@@ -84,7 +84,7 @@ func TestURLService_GetUserURLs(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockGetter := mocks.NewMockURLGetterServ(ctrl)
-	svc := service.NewURLService(nil, mockGetter, nil, nil)
+	svc := service.NewURLService(nil, mockGetter, nil, nil, nil)
 
 	t.Run("success", func(t *testing.T) {
 		expected := []map[string]string{

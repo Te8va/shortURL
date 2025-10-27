@@ -35,7 +35,7 @@ func initBenchmarkRouter(b *testing.B) {
 		mockDeleter.EXPECT().DeleteUserURLs(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 		cfg := config.NewConfig()
-		r = router.NewRouter(cfg, mockSaver, mockGetter, nil, mockDeleter)
+		r = router.NewRouter(cfg, mockSaver, mockGetter, nil, mockDeleter, nil)
 	})
 }
 
