@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package shorturl;
+
+option go_package = "./gen;gen";;
+
+service ShortURLService {
+  rpc SaveURL(SaveURLRequest) returns (SaveURLResponse) {}
+  rpc SaveBatch(SaveBatchRequest) returns (SaveBatchResponse) {}
+  rpc GetURL(GetURLRequest) returns (GetURLResponse) {}
+  rpc GetUserURLs(GetUserURLsRequest) returns (GetUserURLsResponse) {}
+  rpc DeleteUserURLs(DeleteUserURLsRequest) returns (DeleteUserURLsResponse) {}
+  rpc GetStats(GetStatsRequest) returns (GetStatsResponse) {}
+  rpc Ping(PingRequest) returns (PingResponse) {}
+}
+
+message SaveURLRequest {
+  string url = 1;
+}
+
+message SaveURLResponse {
+  string short_url = 1;
+}
+
+message SaveBatchRequest {
+  repeated BatchItem items = 1;
+}
+
+message BatchItem {
+  string correlation_id = 1;
+  string original_url = 2;
+}
+
+message SaveBatchResponse {
+  repeated BatchResponseItem items = 1;
+}
+
+message BatchResponseItem {
+  string correlation_id = 1;
+  string short_url = 2;
+}
+
+message GetURLRequest {
+  string id = 1;
+}
+
+message GetURLResponse {
+  string original_url = 1;
+}
+
+message GetUserURLsRequest {
+}
+
+message GetUserURLsResponse {
+  repeated UserURLItem urls = 1;
+}
+
+message UserURLItem {
+  string short_url = 1;
+  string original_url = 2;
+}
+
+message DeleteUserURLsRequest {
+  repeated string ids = 1;
+}
+
+message DeleteUserURLsResponse {}
+
+message GetStatsRequest {}
+
+message GetStatsResponse {
+  int32 urls = 1;
+  int32 users = 2;
+}
+
+message PingRequest {}
+
+message PingResponse {
+  bool success = 1;
+}

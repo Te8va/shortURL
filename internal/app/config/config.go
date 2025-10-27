@@ -12,27 +12,31 @@ import (
 
 // Config holds application configuration parameters
 type Config struct {
-	ServerAddress    string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
-	BaseURL          string `env:"BASE_URL" envDefault:"http://localhost:8080"`
-	FileStoragePath  string `env:"FILE_STORAGE_PATH"`
-	PostgresUser     string `env:"POSTGRES_USER"         envDefault:"shortURL"`
-	PostgresPassword string `env:"POSTGRES_PASSWORD"     envDefault:"shortURL"`
-	PostgresDB       string `env:"POSTGRES_DB"     envDefault:"shortURL"`
-	PostgresPort     int    `env:"POSTGRES_PORT"         envDefault:"5432"`
-	DatabaseDSN      string `env:"DATABASE_DSN"`
-	JWTKey           string `env:"JWT_KEY"               envDefault:"supermegasecret"`
-	EnableHTTPS      bool
-	TrustedSubnet    string `env:"TRUSTED_SUBNET"`
+	ServerAddress     string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
+	BaseURL           string `env:"BASE_URL" envDefault:"http://localhost:8080"`
+	FileStoragePath   string `env:"FILE_STORAGE_PATH"`
+	PostgresUser      string `env:"POSTGRES_USER"         envDefault:"shortURL"`
+	PostgresPassword  string `env:"POSTGRES_PASSWORD"     envDefault:"shortURL"`
+	PostgresDB        string `env:"POSTGRES_DB"     envDefault:"shortURL"`
+	PostgresPort      int    `env:"POSTGRES_PORT"         envDefault:"5432"`
+	DatabaseDSN       string `env:"DATABASE_DSN"`
+	JWTKey            string `env:"JWT_KEY"               envDefault:"supermegasecret"`
+	EnableHTTPS       bool
+	TrustedSubnet     string `env:"TRUSTED_SUBNET"`
+	EnableGRPC        bool   `env:"ENABLE_GRPC" envDefault:"false"`
+	GRPCServerAddress string `env:"GRPC_SERVER_ADDRESS" envDefault:":50051"`
 }
 
 // ConfigFile describes JSON configuration file format
 type ConfigFile struct {
-	ServerAddress   string `json:"server_address"`
-	BaseURL         string `json:"base_url"`
-	FileStoragePath string `json:"file_storage_path"`
-	DatabaseDSN     string `json:"database_dsn"`
-	EnableHTTPS     bool   `json:"enable_https"`
-	TrustedSubnet   string `json:"trusted_subnet"`
+	ServerAddress     string `json:"server_address"`
+	BaseURL           string `json:"base_url"`
+	FileStoragePath   string `json:"file_storage_path"`
+	DatabaseDSN       string `json:"database_dsn"`
+	EnableHTTPS       bool   `json:"enable_https"`
+	TrustedSubnet     string `json:"trusted_subnet"`
+	EnableGRPC        bool   `json:"enable_grpc"`
+	GRPCServerAddress string `json:"grpc_server_address"`
 }
 
 func loadFromFile(path string) (*ConfigFile, error) {
@@ -65,6 +69,8 @@ func NewConfig() *Config {
 	configPathFlag := flag.String("c", "", "Path to config file (JSON)")
 	configPathFlagLong := flag.String("config", "", "Path to config file (JSON)")
 	trustedSubnetFlag := flag.String("t", "", "Trusted subnet for internal stats (CIDR notation)")
+	enableGRPCFlag := flag.Bool("grpc", false, "Enable gRPC server")
+	grpcAddrFlag := flag.String("grpc-addr", "", "gRPC server address")
 
 	flag.Parse()
 
@@ -85,6 +91,7 @@ func NewConfig() *Config {
 			cfg.DatabaseDSN = cfgFile.DatabaseDSN
 			cfg.EnableHTTPS = cfgFile.EnableHTTPS
 			cfg.TrustedSubnet = cfgFile.TrustedSubnet
+			cfg.EnableGRPC = cfgFile.EnableGRPC
 		}
 	}
 
@@ -99,6 +106,12 @@ func NewConfig() *Config {
 	}
 	if *trustedSubnetFlag != "" {
 		cfg.TrustedSubnet = *trustedSubnetFlag
+	}
+	if *grpcAddrFlag != "" {
+		cfg.GRPCServerAddress = *grpcAddrFlag
+	}
+	if *enableGRPCFlag {
+		cfg.EnableGRPC = true
 	}
 
 	if dsnEnv, exists := os.LookupEnv("DATABASE_DSN"); exists && dsnEnv != "" {

@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/golang-migrate/migrate/v4"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 
 	"github.com/Te8va/shortURL/internal/app/config"
 	"github.com/Te8va/shortURL/internal/app/repository"
@@ -20,14 +22,15 @@ import (
 
 // App represents the core application structure
 type App struct {
-	cfg     *config.Config
-	logger  *zap.SugaredLogger
-	saver   service.URLSaverServ
-	getter  service.URLGetterServ
-	pinger  service.PingerServ
-	deleter service.URLDeleteServ
-	stat    service.URLStatsServ
-	server  *http.Server
+	cfg        *config.Config
+	logger     *zap.SugaredLogger
+	saver      service.URLSaverServ
+	getter     service.URLGetterServ
+	pinger     service.PingerServ
+	deleter    service.URLDeleteServ
+	stat       service.URLStatsServ
+	httpServer *http.Server
+	grpcServer *grpc.Server
 }
 
 // NewApp creates a new App instance
@@ -129,9 +132,14 @@ func (a *App) initMemoryStorage() error {
 func (a *App) initServer() {
 	handler := router.NewRouter(a.cfg, a.saver, a.getter, a.pinger, a.deleter, a.stat)
 
-	a.server = &http.Server{
+	a.httpServer = &http.Server{
 		Addr:    a.cfg.ServerAddress,
 		Handler: handler,
+	}
+
+	if a.cfg.EnableGRPC {
+		a.grpcServer = grpc.NewServer()
+		a.grpcServer = router.NewGRPCRouter(a.cfg, a.saver, a.getter, a.deleter, a.pinger, a.stat)
 	}
 }
 
@@ -147,15 +155,30 @@ func (a *App) Run() error {
 		a.logger.Infow("Server started", "addr", a.cfg.ServerAddress)
 
 		if a.cfg.EnableHTTPS {
-			if err := a.server.ListenAndServeTLS("cert.pem", "key.pem"); err != nil && err != http.ErrServerClosed {
+			if err := a.httpServer.ListenAndServeTLS("cert.pem", "key.pem"); err != nil && err != http.ErrServerClosed {
 				a.logger.Fatalw("ListenAndServeTLS failed", "error", err)
 			}
 		} else {
-			if err := a.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			if err := a.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 				a.logger.Fatalw("ListenAndServe failed", "error", err)
 			}
 		}
 	}()
+
+	if a.cfg.EnableGRPC {
+		go func() {
+			a.logger.Infow("gRPC server starting", "addr", a.cfg.GRPCServerAddress)
+
+			lis, err := net.Listen("tcp", a.cfg.GRPCServerAddress)
+			if err != nil {
+				a.logger.Fatalw("Failed to listen gRPC", "error", err)
+			}
+
+			if err := a.grpcServer.Serve(lis); err != nil {
+				a.logger.Fatalw("gRPC server failed", "error", err)
+			}
+		}()
+	}
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
@@ -167,11 +190,24 @@ func (a *App) Run() error {
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer shutdownCancel()
 
-	if err := a.server.Shutdown(shutdownCtx); err != nil {
-		a.logger.Fatalw("Server shutdown failed", "error", err)
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		if err := a.httpServer.Shutdown(shutdownCtx); err != nil {
+			a.logger.Errorw("HTTP server shutdown failed", "error", err)
+		}
+	}()
+
+	if a.cfg.EnableGRPC && a.grpcServer != nil {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			a.grpcServer.GracefulStop()
+		}()
 	}
 
-	var wg sync.WaitGroup
 	waitGroupChan := make(chan struct{})
 	go func() {
 		wg.Wait()
@@ -180,9 +216,9 @@ func (a *App) Run() error {
 
 	select {
 	case <-waitGroupChan:
-		a.logger.Infoln("All goroutines finished cleanly")
+		a.logger.Infoln("All servers finished cleanly")
 	case <-time.After(3 * time.Second):
-		a.logger.Warn("Some goroutines did not finish in time")
+		a.logger.Warn("Some servers did not finish in time")
 	}
 
 	a.logger.Infoln("Server shut down successfully")
